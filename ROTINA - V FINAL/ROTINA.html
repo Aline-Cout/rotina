@@ -8,28 +8,28 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=account-verification-20261113">
+<link rel="stylesheet" href="styles.css?v=brand-check-logo-20261113">
 </head>
 <body>
 <section class="auth-screen" id="authScreen" aria-labelledby="authTitle">
- <div class="auth-card"><a class="brand auth-brand" href="#inicio"><span class="brand-mark">R</span><span>rotina<span class="brand-dot">.</span></span></a><p class="eyebrow">SEU ESPAÇO, EM QUALQUER DISPOSITIVO</p><h1 id="authTitle">Entrar na minha rotina</h1><p class="page-subtitle">Entre com seu e-mail e senha para sincronizar seu quadro.</p>
+ <div class="auth-card"><a class="brand auth-brand" href="#inicio"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8.5"></circle><path d="m8.5 12.2 2.4 2.4 4.8-5"></path><path d="M20.5 11a8.5 8.5 0 0 1-2.1 6.1"></path></svg></span><span>rotina<span class="brand-dot">.</span></span></a><p class="eyebrow">SEU ESPAÇO, EM QUALQUER DISPOSITIVO</p><h1 id="authTitle">Entrar na minha rotina</h1><p class="page-subtitle">Entre com seu e-mail e senha para sincronizar seu quadro.</p>
   <div class="auth-mode-tabs" role="group" aria-label="Escolha como acessar"><button class="auth-mode-tab active" id="loginModeButton" type="button" aria-pressed="true" onclick="setAuthMode('login')">Entrar</button><button class="auth-mode-tab" id="signupModeButton" type="button" aria-pressed="false" onclick="setAuthMode('signup')">Criar conta</button></div>
   <form id="authForm" onsubmit="submitAuth(event)"><label class="lbl" for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" required placeholder="voce@exemplo.com"><label class="lbl" for="authPassword">Senha</label><input id="authPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="Senha da Minha Rotina"><button class="auth-submit" id="authSubmit" type="submit">Entrar</button></form>
   <button class="auth-link" type="button" onclick="resetPassword()">Esqueci minha senha</button><p id="authMessage" class="auth-message" role="status" aria-live="polite"></p><p class="auth-note">Use a senha criada para este app. Ela pode ser diferente da senha do seu Gmail.</p>
  </div>
 </section>
 <section class="auth-screen" id="emailVerificationScreen" aria-labelledby="emailVerificationTitle" hidden>
- <div class="auth-card"><a class="brand auth-brand" href="#inicio"><span class="brand-mark">R</span><span>rotina<span class="brand-dot">.</span></span></a><p class="eyebrow">PROTEÇÃO DA CONTA</p><h1 id="emailVerificationTitle">Confirme seu e-mail</h1><p class="page-subtitle" id="emailVerificationText">Enviamos um link para confirmar seu endereço antes de carregar seus dados.</p><button class="auth-submit" type="button" onclick="resendVerificationEmail()">Reenviar link de confirmação</button><button class="secondary-button verification-confirm" type="button" onclick="refreshVerificationStatus()">Já confirmei meu e-mail</button><button class="auth-link" type="button" onclick="signOutUser()">Sair e voltar ao login</button><p id="verificationMessage" class="auth-message" role="status" aria-live="polite"></p><p class="auth-note">Confira também as pastas de spam e promoções. Use sempre o mesmo e-mail e senha nos seus dispositivos.</p></div>
+ <div class="auth-card"><a class="brand auth-brand" href="#inicio"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8.5"></circle><path d="m8.5 12.2 2.4 2.4 4.8-5"></path><path d="M20.5 11a8.5 8.5 0 0 1-2.1 6.1"></path></svg></span><span>rotina<span class="brand-dot">.</span></span></a><p class="eyebrow">PROTEÇÃO DA CONTA</p><h1 id="emailVerificationTitle">Confirme seu e-mail</h1><p class="page-subtitle" id="emailVerificationText">Enviamos um link para confirmar seu endereço antes de carregar seus dados.</p><button class="auth-submit" type="button" onclick="resendVerificationEmail()">Reenviar link de confirmação</button><button class="secondary-button verification-confirm" type="button" onclick="refreshVerificationStatus()">Já confirmei meu e-mail</button><button class="auth-link" type="button" onclick="signOutUser()">Sair e voltar ao login</button><p id="verificationMessage" class="auth-message" role="status" aria-live="polite"></p><p class="auth-note">Confira também as pastas de spam e promoções. Use sempre o mesmo e-mail e senha nos seus dispositivos.</p></div>
 </section>
 <section class="auth-screen" id="dataChoiceScreen" aria-labelledby="dataChoiceTitle" hidden>
- <div class="auth-card"><a class="brand auth-brand" href="#inicio"><span class="brand-mark">R</span><span>rotina<span class="brand-dot">.</span></span></a><p class="eyebrow">PROTEÇÃO DOS SEUS DADOS</p><h1 id="dataChoiceTitle">Escolha seus dados</h1><p class="page-subtitle" id="dataChoiceText"></p>
+ <div class="auth-card"><a class="brand auth-brand" href="#inicio"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8.5"></circle><path d="m8.5 12.2 2.4 2.4 4.8-5"></path><path d="M20.5 11a8.5 8.5 0 0 1-2.1 6.1"></path></svg></span><span>rotina<span class="brand-dot">.</span></span></a><p class="eyebrow">PROTEÇÃO DOS SEUS DADOS</p><h1 id="dataChoiceTitle">Escolha seus dados</h1><p class="page-subtitle" id="dataChoiceText"></p>
   <div class="choice-options"><button class="auth-submit" id="useCloudData" type="button" onclick="resolveDataChoice('cloud')">Manter a cópia da nuvem</button><button class="secondary-button" id="useDeviceData" type="button" onclick="resolveDataChoice('device')">Usar e sincronizar esta cópia</button><button class="auth-link" id="startEmptyData" type="button" onclick="resolveDataChoice('empty')">Começar sem importar dados antigos</button></div>
   <p class="auth-note">Nada será importado para outra conta sem sua escolha. Se a cópia do aparelho não for sua, escolha não importá-la.</p>
  </div>
 </section>
 <div class="app-shell" id="appShell" hidden>
  <aside class="sidebar">
-  <a class="brand" href="#inicio" aria-label="Minha Rotina, início"><span class="brand-mark">R</span><span>rotina<span class="brand-dot">.</span></span></a>
+  <a class="brand" href="#inicio" aria-label="Minha Rotina, início"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8.5"></circle><path d="m8.5 12.2 2.4 2.4 4.8-5"></path><path d="M20.5 11a8.5 8.5 0 0 1-2.1 6.1"></path></svg></span><span>rotina<span class="brand-dot">.</span></span></a>
   <div class="workspace-label">MEU ESPAÇO</div>
   <nav class="side-nav" aria-label="Navegação principal">
    <button class="nav-link active" aria-label="Visão geral" title="Visão geral" aria-current="page" onclick="show('dia',this)"><span class="nav-icon">▦</span>Visão geral</button>
@@ -116,8 +116,9 @@
 <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js" defer></script>
-<script src="app.js?v=account-verification-20261113" defer></script>
+<script src="app.js?v=brand-check-logo-20261113" defer></script>
 </body>
 </html>
+
 
 
