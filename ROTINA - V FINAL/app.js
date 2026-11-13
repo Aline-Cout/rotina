@@ -327,7 +327,7 @@ function renderHoje(){
   const d=new Date(); d.setDate(d.getDate()+i);
   const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   const ty=dayType(ds),label=ty==='plantao'?'Plantão':ty==='folga'?'Folga':'Sem escala';
-  strip+=`<button type="button" class="chip ${ty||'unassigned'}" aria-label="${weekdayName(ds)} ${ds.slice(8,10)}/${ds.slice(5,7)}: ${label}. Clique para definir" onclick="openDateInCalendar('${ds}')"><div>${i===0?'Hoje':weekdayName(ds)}</div><div class="d">${ds.slice(8,10)}/${ds.slice(5,7)}</div><div>${label}</div></button>`;
+  strip+=`<div class="chip ${ty||'unassigned'}"><button type="button" class="chip-open" aria-label="Abrir ${weekdayName(ds)} ${ds.slice(8,10)}/${ds.slice(5,7)} no calendário" onclick="openDateInCalendar('${ds}')"><span>${i===0?'Hoje':weekdayName(ds)}</span><span class="d">${ds.slice(8,10)}/${ds.slice(5,7)}</span></button><label class="sr-only" for="scale-${ds}">Escala de ${weekdayName(ds)} ${ds.slice(8,10)}/${ds.slice(5,7)}</label><select id="scale-${ds}" aria-label="Escala de ${weekdayName(ds)} ${ds.slice(8,10)}/${ds.slice(5,7)}" onchange="setDayTypeOverride('${ds}',this.value)"><option value="" ${!overrides[ds]?'selected':''}>${settings.anchor?`Escala · ${label}`:'Sem escala'}</option><option value="plantao" ${overrides[ds]==='plantao'?'selected':''}>Plantão</option><option value="folga" ${overrides[ds]==='folga'?'selected':''}>Folga</option></select></div>`;
  }
  document.getElementById('strip').innerHTML=strip;
 }
@@ -467,6 +467,10 @@ function openDay(dateStr){
 function setOverride(dateStr,val){
  if(val) overrides[dateStr]=val; else delete overrides[dateStr];
  saveAll(); renderCalendar(); openDay(dateStr); renderHoje();
+}
+function setDayTypeOverride(dateStr,val){
+ if(val)overrides[dateStr]=val;else delete overrides[dateStr];
+ saveAll();renderCalendar();renderHoje();
 }
 
 // ---------- AJUSTES ----------
