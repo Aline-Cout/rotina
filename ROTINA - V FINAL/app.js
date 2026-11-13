@@ -339,9 +339,7 @@ function renderTaskCard(task,date,status){
  const state=getCheckState(date,task.id);
  const shortId=String(task.id).slice(-4).toUpperCase();
  const category=dayType(date)==='plantao'?'Plantão':dayType(date)==='folga'?'Folga':'Rotina base';
- const completed=status==='done';
- const completeLabel=completed?'Reabrir tarefa':'Concluir tarefa';
- return `<article class="task-card ${completed?'completed':''}" draggable="true" ondragstart="dragTask(event,'${date}','${task.id}')" ondragend="this.classList.remove('dragging')"><div class="task-card-head"><span class="task-id">${task.extra?'PESSOAL':'ROT'}-${shortId}</span><div class="task-card-actions"><span class="drag-handle" aria-hidden="true">⠿</span><button type="button" class="complete-task ${completed?'is-complete':''}" aria-label="${completeLabel}: ${escapeAttr(task.title)}" title="${completeLabel}" aria-pressed="${completed}" draggable="false" onclick="event.stopPropagation();setTaskStatus('${date}','${task.id}','${completed?'todo':'done'}')">${completed?'↶':'✓'}</button></div></div><h4>${escapeHTML(task.title)}</h4>${task.detail?`<p class="task-description">${escapeHTML(task.detail)}</p>`:''}<div class="task-card-foot"><label class="task-time"><span>HORÁRIO</span><input type="time" value="${state.time||task.time}" onchange="setCheckTime('${date}','${task.id}',this.value)" aria-label="Horário de ${escapeAttr(task.title)}"></label>${task.extra?`<button class="remove-task" aria-label="Remover ${escapeAttr(task.title)}" onclick="removeExtraTask('${date}','${task.id}')">×</button>`:`<span class="task-category">${category}</span>`}</div></article>`;
+ return `<article class="task-card ${status==='done'?'completed':''}" draggable="true" ondragstart="dragTask(event,'${date}','${task.id}')" ondragend="this.classList.remove('dragging')"><div class="task-card-head"><span class="task-id">${task.extra?'PESSOAL':'ROT'}-${shortId}</span><span class="drag-handle" aria-hidden="true">⠿</span></div><h4>${escapeHTML(task.title)}</h4>${task.detail?`<p class="task-description">${escapeHTML(task.detail)}</p>`:''}<div class="task-card-foot"><label class="task-time"><span>HORÁRIO</span><input type="time" value="${state.time||task.time}" onchange="setCheckTime('${date}','${task.id}',this.value)" aria-label="Horário de ${escapeAttr(task.title)}"></label>${task.extra?`<button class="remove-task" aria-label="Remover ${escapeAttr(task.title)}" onclick="removeExtraTask('${date}','${task.id}')">×</button>`:`<span class="task-category">${category}</span>`}</div></article>`;
 }
 function updateProgress(date,tasks){
  const states=tasks.map(t=>getCheckState(date,t.id).status);
@@ -517,5 +515,6 @@ renderFeriasBadge();
 renderHoje();
 setAuthMode('login');
 initCloud();
+
 
 
