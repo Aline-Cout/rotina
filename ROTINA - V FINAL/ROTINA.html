@@ -59,9 +59,9 @@
      <article class="overview-card"><div class="overview-top"><span>Concluídas</span><span class="overview-icon green-icon">✓</span></div><div class="overview-number" id="doneCount">0</div><small>de <span id="totalCount">0</span> tarefas</small></article>
     </div>
 
-    <div class="board-heading"><div><div class="board-title-line"><h2>Quadro de hoje</h2><span class="typeBadge" id="hojeTipo"></span></div><p id="hojeData" class="board-subtitle"></p><p class="board-instruction">Use o menu do cartão para mudar a etapa. No computador, você também pode arrastar.</p></div><div class="board-heading-actions"><span class="board-date-chip" id="feriasBadge"></span><button class="icon-button" title="Atualizar quadro" onclick="renderHoje()">↻</button></div></div>
+    <div class="board-heading"><div><div class="board-title-line"><h2>Quadro de hoje</h2><span class="typeBadge" id="hojeTipo"></span></div><p id="hojeData" class="board-subtitle"></p><p class="board-instruction">Arraste os cartões entre as colunas para atualizar o andamento.</p></div><div class="board-heading-actions"><button class="text-button" id="defineTodayButton" type="button" onclick="openDateInCalendar(todayStr())" hidden>Definir este dia</button><span class="board-date-chip" id="feriasBadge"></span><button class="icon-button" title="Atualizar quadro" onclick="renderHoje()">↻</button></div></div>
     <div class="board-wrap"><div id="routine" class="kanban-board"></div></div>
-    <div class="next-days-card"><div class="section-heading"><div><h2>Próximos dias</h2><p>Seu ciclo de trabalho e descanso</p></div><button class="text-button" onclick="show('cal',document.querySelectorAll('.nav-link')[2])">Ver calendário <span>→</span></button></div><div class="strip" id="strip"></div></div>
+    <div class="next-days-card"><div class="section-heading"><div><h2>Próximos dias</h2><p>Toque em um dia para definir plantão ou folga</p></div><button class="text-button" onclick="show('cal',document.querySelectorAll('.nav-link')[2])">Ver calendário <span>→</span></button></div><div class="strip" id="strip"></div></div>
    </section>
 
    <section id="rotinas" class="view">
@@ -74,7 +74,7 @@
 
    <section id="cal" class="view">
     <div class="page-heading"><div><p class="eyebrow">PLANEJAMENTO</p><h1>Calendário<span class="heading-period">.</span></h1><p class="page-subtitle">Visualize seu ciclo e ajuste dias específicos quando precisar.</p></div></div>
-    <article class="card calendar-card"><div class="calNav"><button class="icon-button" onclick="changeMonth(-1)" aria-label="Mês anterior">←</button><div class="label" id="calLabel"></div><button class="icon-button" onclick="changeMonth(1)" aria-label="Próximo mês">→</button></div><div class="calendar" id="calendar"></div><div class="legend"><span><i class="dot p"></i>Plantão</span><span><i class="dot f"></i>Folga</span><span><i class="dot v"></i>Férias</span><span><i class="dot override-dot"></i>Dia ajustado</span></div><div class="detailPanel" id="dayPanel" style="display:none"></div></article>
+    <article class="card calendar-card"><div class="calNav"><button class="icon-button" onclick="changeMonth(-1)" aria-label="Mês anterior">←</button><div class="label" id="calLabel"></div><button class="icon-button" onclick="changeMonth(1)" aria-label="Próximo mês">→</button></div><div class="calendar" id="calendar"></div><div class="legend"><span><i class="dot p"></i>Plantão</span><span><i class="dot f"></i>Folga</span><span><i class="dot u"></i>Sem escala</span><span><i class="dot v"></i>Férias</span><span><i class="dot override-dot"></i>Dia ajustado</span></div><div class="detailPanel" id="dayPanel" style="display:none"></div></article>
    </section>
 
    <section id="ajustes" class="view">
