@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#123b31">
-<title>Minha Rotina | Aline</title>
+<title>Minha Rotina</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -17,25 +17,31 @@
   <button class="auth-link" type="button" onclick="resetPassword()">Esqueci minha senha</button><button class="auth-link" id="authSwitch" type="button" data-mode="signup" onclick="setAuthMode(this.dataset.mode)">Ainda não tenho conta · Criar conta</button><p id="authMessage" class="auth-message" role="status" aria-live="polite"></p><p class="auth-note">A conta usa e-mail e senha. Não é necessário entrar com Google.</p>
  </div>
 </section>
+<section class="auth-screen" id="dataChoiceScreen" aria-labelledby="dataChoiceTitle" hidden>
+ <div class="auth-card"><a class="brand auth-brand" href="#inicio"><span class="brand-mark">R</span><span>rotina<span class="brand-dot">.</span></span></a><p class="eyebrow">PROTEÇÃO DOS SEUS DADOS</p><h1 id="dataChoiceTitle">Escolha seus dados</h1><p class="page-subtitle" id="dataChoiceText"></p>
+  <div class="choice-options"><button class="auth-submit" id="useCloudData" type="button" onclick="resolveDataChoice('cloud')">Manter a cópia da nuvem</button><button class="secondary-button" id="useDeviceData" type="button" onclick="resolveDataChoice('device')">Usar e sincronizar esta cópia</button><button class="auth-link" id="startEmptyData" type="button" onclick="resolveDataChoice('empty')">Começar sem importar dados antigos</button></div>
+  <p class="auth-note">Nada será importado para outra conta sem sua escolha. Se a cópia do aparelho não for sua, escolha não importá-la.</p>
+ </div>
+</section>
 <div class="app-shell" id="appShell" hidden>
  <aside class="sidebar">
   <a class="brand" href="#inicio" aria-label="Minha Rotina, início"><span class="brand-mark">R</span><span>rotina<span class="brand-dot">.</span></span></a>
   <div class="workspace-label">MEU ESPAÇO</div>
   <nav class="side-nav" aria-label="Navegação principal">
-   <button class="nav-link active" aria-current="page" onclick="show('dia',this)"><span class="nav-icon">▦</span>Visão geral</button>
-   <button class="nav-link" onclick="show('rotinas',this)"><span class="nav-icon">▤</span>Quadro de rotinas</button>
-   <button class="nav-link" onclick="show('cal',this)"><span class="nav-icon">▦</span>Calendário</button>
-   <button class="nav-link" onclick="show('ajustes',this)"><span class="nav-icon">⚙</span>Ajustes</button>
+   <button class="nav-link active" aria-label="Visão geral" title="Visão geral" aria-current="page" onclick="show('dia',this)"><span class="nav-icon">▦</span>Visão geral</button>
+   <button class="nav-link" aria-label="Quadro de rotinas" title="Quadro de rotinas" onclick="show('rotinas',this)"><span class="nav-icon">▤</span>Quadro de rotinas</button>
+   <button class="nav-link" aria-label="Calendário" title="Calendário" onclick="show('cal',this)"><span class="nav-icon">▦</span>Calendário</button>
+   <button class="nav-link" aria-label="Ajustes" title="Ajustes" onclick="show('ajustes',this)"><span class="nav-icon">⚙</span>Ajustes</button>
   </nav>
   <div class="sidebar-bottom">
-   <div class="profile-card"><div class="avatar">A</div><div><strong>Aline</strong><small>Meu painel pessoal</small></div><span class="profile-more">•••</span></div>
+   <div class="profile-card"><div class="avatar">R</div><div><strong>Minha conta</strong><small>Meu painel pessoal</small></div></div>
   </div>
  </aside>
 
  <div class="workspace">
   <header class="topbar">
    <div class="breadcrumbs"><span>Meu espaço</span><span class="crumb-separator">/</span><strong id="viewTitle">Visão geral</strong></div>
-   <div class="topbar-right"><span class="saveStatus" id="saveStatus" role="status" aria-live="polite">Salvo neste dispositivo</span><span class="account-email" id="accountEmail"></span><button class="auth-link signout" onclick="signOutUser()">Sair</button><span class="top-avatar" aria-label="Perfil">A</span></div>
+   <div class="topbar-right"><span class="saveStatus" id="saveStatus" role="status" aria-live="polite">Salvo neste dispositivo</span><span class="account-email" id="accountEmail"></span><button class="auth-link signout" onclick="signOutUser()">Sair</button><span class="top-avatar" aria-label="Perfil da conta">R</span></div>
   </header>
 
   <main class="content">
@@ -53,7 +59,7 @@
      <article class="overview-card"><div class="overview-top"><span>Concluídas</span><span class="overview-icon green-icon">✓</span></div><div class="overview-number" id="doneCount">0</div><small>de <span id="totalCount">0</span> tarefas</small></article>
     </div>
 
-    <div class="board-heading"><div><div class="board-title-line"><h2>Quadro de hoje</h2><span class="typeBadge" id="hojeTipo"></span></div><p id="hojeData" class="board-subtitle"></p><p class="board-instruction">Arraste os cartões para mover as tarefas entre as etapas.</p></div><div class="board-heading-actions"><span class="board-date-chip" id="feriasBadge"></span><button class="icon-button" title="Atualizar quadro" onclick="renderHoje()">↻</button></div></div>
+    <div class="board-heading"><div><div class="board-title-line"><h2>Quadro de hoje</h2><span class="typeBadge" id="hojeTipo"></span></div><p id="hojeData" class="board-subtitle"></p><p class="board-instruction">Use o menu do cartão para mudar a etapa. No computador, você também pode arrastar.</p></div><div class="board-heading-actions"><span class="board-date-chip" id="feriasBadge"></span><button class="icon-button" title="Atualizar quadro" onclick="renderHoje()">↻</button></div></div>
     <div class="board-wrap"><div id="routine" class="kanban-board"></div></div>
     <div class="next-days-card"><div class="section-heading"><div><h2>Próximos dias</h2><p>Seu ciclo de trabalho e descanso</p></div><button class="text-button" onclick="show('cal',document.querySelectorAll('.nav-link')[2])">Ver calendário <span>→</span></button></div><div class="strip" id="strip"></div></div>
    </section>
@@ -75,11 +81,12 @@
     <div class="page-heading"><div><p class="eyebrow">PREFERÊNCIAS</p><h1>Ajustes<span class="heading-period">.</span></h1><p class="page-subtitle">Configure seu ciclo, períodos de férias e cópias de segurança.</p></div></div>
     <article class="card settings-card"><div class="section-heading"><div><h2>Ciclo de plantão</h2><p>Informe um dia conhecido para calcular seu calendário.</p></div></div><div class="presetRow"><button class="preset" onclick="applyPreset(1,3)">24x72</button><button class="preset" onclick="applyPreset(1,2)">24x48</button><button class="preset" onclick="applyPreset(1,1)">12x36 <small>aprox.</small></button></div><div class="form settings-form"><div class="field"><label class="lbl">Nome do turno</label><input type="text" id="s_turno" placeholder="Ex.: Equipe A"></div><div class="field"><label class="lbl">Dias de plantão seguidos</label><input type="number" min="1" id="s_work"></div><div class="field"><label class="lbl">Dias de folga seguidos</label><input type="number" min="1" id="s_rest"></div><div class="field"><label class="lbl">Um dia de plantão conhecido</label><input type="date" id="s_anchor"></div></div><p class="hint">Regimes com menos de 24h (como 12x36) são aproximados por dia inteiro.</p></article>
     <article class="card settings-card"><div class="section-heading"><div><h2>Férias</h2><p>Marque o período para destacá-lo no calendário.</p></div></div><div class="form"><div class="field"><label class="lbl">Início</label><input type="date" id="s_vacStart"></div><div class="field"><label class="lbl">Fim</label><input type="date" id="s_vacEnd"></div></div></article>
-    <article class="card settings-card"><div class="section-heading"><div><h2>Seus dados</h2><p>Os dados ficam neste navegador. Use uma cópia para transferi-los ou recuperá-los.</p></div></div><div class="form"><button class="secondary-button" onclick="exportData()">↓ Baixar cópia de segurança</button><label class="secondary-button file-button" for="importFile">Restaurar cópia</label><input type="file" id="importFile" accept="application/json,.json" onchange="importData(this)" hidden></div><p class="hint" id="backupMessage" role="status" aria-live="polite"></p></article>
-    <div class="settings-footer"><span>Alterações salvas neste dispositivo.</span><button onclick="saveSettings()">Salvar ajustes</button></div>
+    <article class="card settings-card"><div class="section-heading"><div><h2>Seus dados</h2><p>Com sua conta, os dados sincronizam pelo Firebase e também ficam em cópia local. Baixe uma cópia para guardar ou transferir seus dados.</p></div></div><div class="form"><button class="secondary-button" onclick="exportData()">↓ Baixar cópia de segurança</button><label class="secondary-button file-button" for="importFile">Restaurar cópia</label><input type="file" id="importFile" accept="application/json,.json" onchange="importData(this)" hidden></div><p class="hint" id="backupMessage" role="status" aria-live="polite"></p></article>
+    <article class="card settings-card"><div class="section-heading"><div><h2>Privacidade e beta</h2><p>O código do site é público. Seus dados da rotina são guardados na nuvem por conta e as regras do Firebase limitam o acesso ao seu usuário. Este projeto usa serviços gratuitos e não inclui analytics.</p></div></div><p class="hint">Durante o beta, evite registrar informações altamente confidenciais. Para enviar feedback, abra uma solicitação pública no GitHub e não inclua senhas nem dados pessoais.</p><div class="form"><a class="secondary-button" href="PRIVACIDADE.html">Aviso de privacidade</a><a class="secondary-button" href="https://github.com/Aline-Cout/rotina/issues/new?title=Feedback%20Minha%20Rotina" target="_blank" rel="noopener">Enviar feedback</a><button class="danger-button" type="button" onclick="openDeleteAccountDialog()">Excluir minha conta e dados</button></div></article>
+    <div class="settings-footer"><span>Alterações salvas no dispositivo e na nuvem quando conectado.</span><button onclick="saveSettings()">Salvar ajustes</button></div>
    </section>
   </main>
-  <footer>Minha Rotina <span>·</span> painel pessoal de produtividade</footer>
+  <footer>Minha Rotina <span>·</span> beta pessoal gratuito</footer>
  </div>
 </div>
 <dialog class="task-dialog" id="taskDialog">
@@ -90,6 +97,15 @@
   <div class="field"><label class="lbl" for="newTaskDetail">Detalhes <span class="optional">(opcional)</span></label><input id="newTaskDetail" type="text" placeholder="O que você precisa lembrar?" maxlength="240"></div>
   <div class="field"><label class="lbl" for="newTaskTime">Horário <span class="optional">(opcional)</span></label><input id="newTaskTime" type="time"></div>
   <div class="dialog-actions"><button type="button" class="secondary-button" onclick="document.getElementById('taskDialog').close()">Cancelar</button><button type="submit">Adicionar tarefa</button></div>
+ </form>
+</dialog>
+<dialog class="task-dialog" id="deleteAccountDialog">
+ <form id="deleteAccountForm" onsubmit="deleteAccountAndData(event)">
+  <div class="dialog-heading"><div><p class="eyebrow">AÇÃO IRREVERSÍVEL</p><h2>Excluir conta e dados</h2></div><button type="button" class="icon-button" aria-label="Fechar" onclick="document.getElementById('deleteAccountDialog').close()">×</button></div>
+  <p class="page-subtitle">A conta e a cópia sincronizada serão excluídas. Baixe seu backup antes, se quiser guardar seus dados. Para confirmar que é você, informe a senha desta conta.</p>
+  <div class="field"><label class="lbl" for="deleteAccountPassword">Senha da conta</label><input id="deleteAccountPassword" type="password" autocomplete="current-password" required></div>
+  <p class="auth-message error" id="deleteAccountMessage" role="status" aria-live="polite"></p>
+  <div class="dialog-actions"><button type="button" class="secondary-button" onclick="document.getElementById('deleteAccountDialog').close()">Cancelar</button><button class="danger-button" type="submit">Excluir conta e dados</button></div>
  </form>
 </dialog>
 <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js" defer></script>
