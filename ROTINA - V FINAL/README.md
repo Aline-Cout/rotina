@@ -4,7 +4,7 @@ Painel responsivo de organização pessoal em formato de quadro. O app está pub
 
 ## Abrir e começar
 
-Acesse [Minha Rotina](https://aline-cout.github.io/rotina/ROTINA%20-%20V%20FINAL/ROTINA.html) no computador ou celular. Crie uma conta com seu e-mail e uma senha própria do app; não precisa entrar com Google. Use essa mesma conta nos outros aparelhos.
+Acesse [Minha Rotina](https://aline-cout.github.io/rotina/ROTINA%20-%20V%20FINAL/ROTINA.html) no computador ou celular. Crie uma conta com seu e-mail e uma senha própria do app, que pode ser diferente da senha do Gmail. Use essa mesma conta nos outros aparelhos. Se esquecer a senha, o link de redefinição oferece retorno ao app para entrar com a nova senha.
 
 Se este navegador tiver dados de uma versão antiga, o app perguntará antes de importá-los para a nuvem. Confira se a cópia pertence a você. Em Ajustes, baixe um backup JSON, restaure uma cópia ou exclua sua conta e os dados sincronizados.
 
