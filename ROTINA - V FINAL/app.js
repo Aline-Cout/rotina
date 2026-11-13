@@ -307,7 +307,7 @@ function renderHoje(){
  const ob=document.getElementById('onboarding');
  ob.innerHTML = isConfigured() ? '' : `<div class="notice"><span>Sem escala recorrente: defina os dias manualmente no calendário ou configure seu ciclo.</span><button class="small" onclick="show('ajustes',document.querySelectorAll('.nav-link')[3])">Configurar escala</button></div>`;
 
- const baseTasks=(type?templates[type]:[]).map(tk=>({...tk,extra:false}));
+ const baseTasks=(templates[type||'folga']||[]).map(tk=>({...tk,extra:false}));
  const extraTasks=(dayExtras[t]||[]).map(tk=>({...tk,extra:true}));
  const tasks=[...baseTasks,...extraTasks].sort((a,b)=>{
    const ta=getCheckState(t,a.id).time||a.time||'', tb=getCheckState(t,b.id).time||b.time||'';
@@ -334,7 +334,8 @@ function renderHoje(){
 function renderTaskCard(task,date,status){
  const state=getCheckState(date,task.id);
  const shortId=String(task.id).slice(-4).toUpperCase();
- return `<article class="task-card ${status==='done'?'completed':''}" draggable="true" ondragstart="dragTask(event,'${date}','${task.id}')" ondragend="this.classList.remove('dragging')"><div class="task-card-head"><span class="task-id">${task.extra?'PESSOAL':'ROT'}-${shortId}</span><span class="drag-handle" aria-hidden="true">⠿</span></div><h4>${escapeHTML(task.title)}</h4>${task.detail?`<p class="task-description">${escapeHTML(task.detail)}</p>`:''}<div class="task-card-foot"><label class="task-time"><span>HORÁRIO</span><input type="time" value="${state.time||task.time}" onchange="setCheckTime('${date}','${task.id}',this.value)" aria-label="Horário de ${escapeAttr(task.title)}"></label>${task.extra?`<button class="remove-task" aria-label="Remover ${escapeAttr(task.title)}" onclick="removeExtraTask('${date}','${task.id}')">×</button>`:`<span class="task-category">${dayType(date)==='plantao'?'Plantão':'Folga'}</span>`}</div></article>`;
+ const category=dayType(date)==='plantao'?'Plantão':dayType(date)==='folga'?'Folga':'Rotina base';
+ return `<article class="task-card ${status==='done'?'completed':''}" draggable="true" ondragstart="dragTask(event,'${date}','${task.id}')" ondragend="this.classList.remove('dragging')"><div class="task-card-head"><span class="task-id">${task.extra?'PESSOAL':'ROT'}-${shortId}</span><span class="drag-handle" aria-hidden="true">⠿</span></div><h4>${escapeHTML(task.title)}</h4>${task.detail?`<p class="task-description">${escapeHTML(task.detail)}</p>`:''}<div class="task-card-foot"><label class="task-time"><span>HORÁRIO</span><input type="time" value="${state.time||task.time}" onchange="setCheckTime('${date}','${task.id}',this.value)" aria-label="Horário de ${escapeAttr(task.title)}"></label>${task.extra?`<button class="remove-task" aria-label="Remover ${escapeAttr(task.title)}" onclick="removeExtraTask('${date}','${task.id}')">×</button>`:`<span class="task-category">${category}</span>`}</div></article>`;
 }
 function updateProgress(date,tasks){
  const states=tasks.map(t=>getCheckState(date,t.id).status);
