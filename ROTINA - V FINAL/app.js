@@ -264,7 +264,7 @@ function removeExtraTask(date,id){
 }
 
 function autoType(dateStr){
- if(!settings.anchor) return 'folga';
+ if(!settings.anchor) return null;
  const cycle=settings.work+settings.rest;
  let diff=daysBetween(settings.anchor,dateStr);
  diff=((diff%cycle)+cycle)%cycle;
@@ -287,6 +287,10 @@ function show(id,el){
  if(id==='rotinas') renderEditors();
  if(id==='ajustes') fillSettingsForm();
 }
+function openDateInCalendar(dateStr){
+ show('cal',document.querySelectorAll('.nav-link')[2]);
+ openDay(dateStr);
+}
 
 // ---------- HOJE ----------
 function renderHoje(){
@@ -296,13 +300,14 @@ function renderHoje(){
  document.getElementById('hojeData').textContent=`Hoje — ${weekdayName(t)}, ${fmtBR(t)}`;
  document.getElementById('todayLongDate').textContent=new Date(t+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
  const tb=document.getElementById('hojeTipo');
- tb.className='typeBadge '+type;
- tb.textContent=(type==='plantao'?`🚑 Dia de plantão${settings.turno?' — '+settings.turno:''}`:'🏡 Dia de folga')+(ferias?' · Férias':'');
+ tb.className='typeBadge '+(type||'unassigned');
+ tb.textContent=(type==='plantao'?`🚑 Dia de plantão${settings.turno?' — '+settings.turno:''}`:type==='folga'?'🏡 Dia de folga':'Sem escala')+(ferias?' · Férias':'');
+ document.getElementById('defineTodayButton').hidden=!!type;
 
  const ob=document.getElementById('onboarding');
- ob.innerHTML = isConfigured() ? '' : `<div class="notice"><span>Configure seu ciclo de plantão para a rotina se ajustar sozinha.</span><button class="small" onclick="show('ajustes',document.querySelectorAll('.nav-link')[3])">Configurar agora</button></div>`;
+ ob.innerHTML = isConfigured() ? '' : `<div class="notice"><span>Sem escala recorrente: defina os dias manualmente no calendário ou configure seu ciclo.</span><button class="small" onclick="show('ajustes',document.querySelectorAll('.nav-link')[3])">Configurar escala</button></div>`;
 
- const baseTasks=templates[type].map(tk=>({...tk,extra:false}));
+ const baseTasks=(type?templates[type]:[]).map(tk=>({...tk,extra:false}));
  const extraTasks=(dayExtras[t]||[]).map(tk=>({...tk,extra:true}));
  const tasks=[...baseTasks,...extraTasks].sort((a,b)=>{
    const ta=getCheckState(t,a.id).time||a.time||'', tb=getCheckState(t,b.id).time||b.time||'';
@@ -321,16 +326,15 @@ function renderHoje(){
  for(let i=0;i<5;i++){
   const d=new Date(); d.setDate(d.getDate()+i);
   const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  const ty=dayType(ds);
-  strip+=`<div class="chip ${ty}"><div>${i===0?'Hoje':weekdayName(ds)}</div><div class="d">${ds.slice(8,10)}/${ds.slice(5,7)}</div><div>${ty==='plantao'?'Plantão':'Folga'}</div></div>`;
+  const ty=dayType(ds),label=ty==='plantao'?'Plantão':ty==='folga'?'Folga':'Sem escala';
+  strip+=`<button type="button" class="chip ${ty||'unassigned'}" aria-label="${weekdayName(ds)} ${ds.slice(8,10)}/${ds.slice(5,7)}: ${label}. Clique para definir" onclick="openDateInCalendar('${ds}')"><div>${i===0?'Hoje':weekdayName(ds)}</div><div class="d">${ds.slice(8,10)}/${ds.slice(5,7)}</div><div>${label}</div></button>`;
  }
  document.getElementById('strip').innerHTML=strip;
 }
 function renderTaskCard(task,date,status){
  const state=getCheckState(date,task.id);
  const shortId=String(task.id).slice(-4).toUpperCase();
- const select=`<select class="task-status-select" aria-label="Status de ${escapeAttr(task.title)}" onchange="setTaskStatus('${date}','${task.id}',this.value)"><option value="todo" ${status==='todo'?'selected':''}>A fazer</option><option value="doing" ${status==='doing'?'selected':''}>Em andamento</option><option value="done" ${status==='done'?'selected':''}>Concluído</option></select>`;
- return `<article class="task-card ${status==='done'?'completed':''}" draggable="true" ondragstart="dragTask(event,'${date}','${task.id}')" ondragend="this.classList.remove('dragging')"><div class="task-card-head"><span class="task-id">${task.extra?'PESSOAL':'ROT'}-${shortId}</span>${select}</div><h4>${escapeHTML(task.title)}</h4>${task.detail?`<p class="task-description">${escapeHTML(task.detail)}</p>`:''}<div class="task-card-foot"><label class="task-time"><span>HORÁRIO</span><input type="time" value="${state.time||task.time}" onchange="setCheckTime('${date}','${task.id}',this.value)" aria-label="Horário de ${escapeAttr(task.title)}"></label>${task.extra?`<button class="remove-task" aria-label="Remover ${escapeAttr(task.title)}" onclick="removeExtraTask('${date}','${task.id}')">×</button>`:`<span class="task-category">${dayType(date)==='plantao'?'Plantão':'Folga'}</span>`}</div></article>`;
+ return `<article class="task-card ${status==='done'?'completed':''}" draggable="true" ondragstart="dragTask(event,'${date}','${task.id}')" ondragend="this.classList.remove('dragging')"><div class="task-card-head"><span class="task-id">${task.extra?'PESSOAL':'ROT'}-${shortId}</span><span class="drag-handle" aria-hidden="true">⠿</span></div><h4>${escapeHTML(task.title)}</h4>${task.detail?`<p class="task-description">${escapeHTML(task.detail)}</p>`:''}<div class="task-card-foot"><label class="task-time"><span>HORÁRIO</span><input type="time" value="${state.time||task.time}" onchange="setCheckTime('${date}','${task.id}',this.value)" aria-label="Horário de ${escapeAttr(task.title)}"></label>${task.extra?`<button class="remove-task" aria-label="Remover ${escapeAttr(task.title)}" onclick="removeExtraTask('${date}','${task.id}')">×</button>`:`<span class="task-category">${dayType(date)==='plantao'?'Plantão':'Folga'}</span>`}</div></article>`;
 }
 function updateProgress(date,tasks){
  const states=tasks.map(t=>getCheckState(date,t.id).status);
@@ -424,11 +428,11 @@ function renderCalendar(){
  for(let d=1;d<=days;d++){
   const s=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
   const ty=dayType(s);
-  let cls='day '+ty;
+  let cls='day '+(ty||'unassigned');
   if(s===t) cls+=' today';
   if(isFerias(s)) cls+=' ferias';
   if(overrides[s]) cls+=' override';
-  box.innerHTML+=`<div class="${cls}" onclick="openDay('${s}')"><strong>${d}</strong>${ty==='plantao'?'Plantão':'Folga'}</div>`;
+  box.innerHTML+=`<div class="${cls}" onclick="openDay('${s}')"><strong>${d}</strong>${ty==='plantao'?'Plantão':ty==='folga'?'Folga':'Sem escala'}</div>`;
  }
 }
 function openDay(dateStr){
@@ -438,20 +442,22 @@ function openDay(dateStr){
  const ty=dayType(dateStr);
  const auto=autoType(dateStr);
  const isOverride=!!overrides[dateStr];
- const tasks=[...templates[ty]].sort((a,b)=>a.time.localeCompare(b.time));
+ const tasks=ty?[...templates[ty]].sort((a,b)=>a.time.localeCompare(b.time)):[];
+ const typeName=ty==='plantao'?'Plantão':ty==='folga'?'Folga':'Sem escala';
+ const typeHint=overrides[dateStr]?`Definido manualmente como ${typeName}.`:auto?`Calculado pela escala como ${typeName}.`:'Sem escala automática. Escolha plantão ou folga para este dia, ou configure um ciclo em Ajustes.';
  panel.innerHTML=`
   <div class="dayHeader">
    <strong>${weekdayName(dateStr)}, ${fmtBR(dateStr)}</strong>
-   <span class="typeBadge ${ty}">${ty==='plantao'?'Plantão':'Folga'}</span>
+   <span class="typeBadge ${ty||'unassigned'}">${typeName}</span>
    ${isFerias(dateStr)?'<span class="typeBadge ferias">Férias</span>':''}
   </div>
-  <p class="hint">Tipo calculado automaticamente: ${auto==='plantao'?'Plantão':'Folga'}${isOverride?' (substituído manualmente abaixo)':''}</p>
+  <p class="hint">${typeHint}</p>
   <div class="form">
    <div class="field"><label class="lbl">Definir manualmente</label>
     <select onchange="setOverride('${dateStr}',this.value)">
-     <option value="">Automático</option>
-     <option value="plantao" ${overrides[dateStr]==='plantao'?'selected':''}>Forçar plantão</option>
-     <option value="folga" ${overrides[dateStr]==='folga'?'selected':''}>Forçar folga</option>
+     <option value="">${isConfigured()?'Usar escala automática':'Sem escala'}</option>
+     <option value="plantao" ${overrides[dateStr]==='plantao'?'selected':''}>${isConfigured()?'Forçar plantão':'Definir como plantão'}</option>
+     <option value="folga" ${overrides[dateStr]==='folga'?'selected':''}>${isConfigured()?'Forçar folga':'Definir como folga'}</option>
     </select>
    </div>
   </div>
