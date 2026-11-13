@@ -6,126 +6,86 @@
 <meta name="theme-color" content="#123b31">
 <title>Minha Rotina | Aline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header><div class="header">
-<div><h1>Minha Rotina</h1><div class="subtitle">Treino • Concurso • TI • Casa • Redes sociais</div></div>
-<div><div class="badge" id="feriasBadge"></div><div class="saveStatus" id="saveStatus" role="status" aria-live="polite">Dados salvos neste dispositivo</div></div>
-</div></header>
+<div class="app-shell">
+ <aside class="sidebar">
+  <a class="brand" href="#inicio" aria-label="Minha Rotina, início"><span class="brand-mark">R</span><span>rotina<span class="brand-dot">.</span></span></a>
+  <div class="workspace-label">MEU ESPAÇO</div>
+  <nav class="side-nav" aria-label="Navegação principal">
+   <button class="nav-link active" aria-current="page" onclick="show('dia',this)"><span class="nav-icon">▦</span>Visão geral</button>
+   <button class="nav-link" onclick="show('rotinas',this)"><span class="nav-icon">▤</span>Quadro de rotinas</button>
+   <button class="nav-link" onclick="show('cal',this)"><span class="nav-icon">▦</span>Calendário</button>
+   <button class="nav-link" onclick="show('ajustes',this)"><span class="nav-icon">⚙</span>Ajustes</button>
+  </nav>
+  <div class="sidebar-bottom">
+   <div class="profile-card"><div class="avatar">A</div><div><strong>Aline</strong><small>Meu painel pessoal</small></div><span class="profile-more">•••</span></div>
+  </div>
+ </aside>
 
-<main>
-<div class="tabs">
-<button class="tab active" onclick="show('dia',this)">Hoje</button>
-<button class="tab" onclick="show('rotinas',this)">Rotinas</button>
-<button class="tab" onclick="show('cal',this)">Calendário</button>
-<button class="tab" onclick="show('ajustes',this)">Ajustes</button>
-</div>
+ <div class="workspace">
+  <header class="topbar">
+   <div class="breadcrumbs"><span>Meu espaço</span><span class="crumb-separator">/</span><strong id="viewTitle">Visão geral</strong></div>
+   <div class="topbar-right"><span class="saveStatus" id="saveStatus" role="status" aria-live="polite">Salvo neste dispositivo</span><span class="top-avatar" aria-label="Aline">A</span></div>
+  </header>
 
-<section id="dia" class="view active">
-<div id="onboarding"></div>
-<div class="card">
-<div class="dayHeader">
- <h2 id="hojeData">Hoje</h2>
- <span class="typeBadge" id="hojeTipo"></span>
-</div>
-<p class="hint">Priorize constância, não perfeição.</p>
-<div class="stat" id="pct">0%</div>
-<div class="progress"><div class="bar" id="bar"></div></div>
-<div class="strip" id="strip"></div>
-</div>
-<div class="card"><h2>Rotina de hoje</h2><p class="hint">Marque o que já foi feito. Clique no horário pra ajustar só hoje (o padrão continua o mesmo na aba "Rotinas").</p>
-<div id="routine"></div>
-<div class="addExtra">
- <div class="field"><label class="lbl">Hora</label><input type="time" id="ex_time"></div>
- <div class="field" style="flex:1"><label class="lbl">Atividade feita fora do plano</label><input type="text" id="ex_title" placeholder="Ex: 🧘 Alongamento"></div>
- <div class="field" style="flex:1"><label class="lbl">Detalhe</label><input type="text" id="ex_detail" placeholder="opcional"></div>
- <button class="ghost" onclick="addExtraTask()">Adicionar só hoje</button>
-</div>
-</div>
-</section>
+  <main class="content">
+   <section id="dia" class="view active">
+    <div class="page-heading">
+     <div><p class="eyebrow" id="todayLongDate"></p><h1>Seu dia, em foco<span class="heading-period">.</span></h1><p class="page-subtitle">Um passo de cada vez. Acompanhe o que importa hoje.</p></div>
+     <button class="primary-button" onclick="focusNewTask()"><span>＋</span> Nova tarefa</button>
+    </div>
+    <div id="onboarding"></div>
 
-<section id="rotinas" class="view">
-<p class="hint" style="margin-bottom:14px">Edite os horários e tarefas de cada tipo de dia. Isso é usado automaticamente em "Hoje" e no calendário.</p>
-<div class="two">
-<div class="card">
-<h2>🚑 Dia de plantão</h2>
-<div id="editPlantao"></div>
-<div class="form">
- <div class="field"><label class="lbl">Hora</label><input type="time" id="np_time"></div>
- <div class="field" style="flex:1"><label class="lbl">Tarefa</label><input type="text" id="np_title" placeholder="Ex: 🚑 Plantão"></div>
- <div class="field" style="flex:1"><label class="lbl">Detalhe</label><input type="text" id="np_detail" placeholder="opcional"></div>
- <button onclick="addTask('plantao')">Adicionar</button>
-</div>
-</div>
-<div class="card">
-<h2>🏡 Dia de folga</h2>
-<div id="editFolga"></div>
-<div class="form">
- <div class="field"><label class="lbl">Hora</label><input type="time" id="nf_time"></div>
- <div class="field" style="flex:1"><label class="lbl">Tarefa</label><input type="text" id="nf_title" placeholder="Ex: 💻 TI"></div>
- <div class="field" style="flex:1"><label class="lbl">Detalhe</label><input type="text" id="nf_detail" placeholder="opcional"></div>
- <button onclick="addTask('folga')">Adicionar</button>
-</div>
-</div>
-</div>
-</section>
+    <div class="overview-grid">
+     <article class="overview-card progress-card"><div class="overview-top"><span>Progresso de hoje</span><span class="overview-icon green-icon">↗</span></div><div class="progress-number" id="pct">0%</div><div class="progress-track"><div class="bar" id="bar"></div></div><small>tarefas concluídas</small></article>
+     <article class="overview-card"><div class="overview-top"><span>A fazer</span><span class="overview-icon amber-icon">○</span></div><div class="overview-number" id="todoCount">0</div><small>tarefas pendentes</small></article>
+     <article class="overview-card"><div class="overview-top"><span>Em andamento</span><span class="overview-icon blue-icon">◷</span></div><div class="overview-number" id="doingCount">0</div><small>em foco agora</small></article>
+     <article class="overview-card"><div class="overview-top"><span>Concluídas</span><span class="overview-icon green-icon">✓</span></div><div class="overview-number" id="doneCount">0</div><small>de <span id="totalCount">0</span> tarefas</small></article>
+    </div>
 
-<section id="cal" class="view">
-<div class="card">
-<div class="calNav">
- <button class="ghost small" onclick="changeMonth(-1)">←</button>
- <div class="label" id="calLabel"></div>
- <button class="ghost small" onclick="changeMonth(1)">→</button>
-</div>
-<p class="hint">Plantão calculado automaticamente pelo ciclo. Clique num dia para ver detalhes ou marcar uma exceção.</p>
-<div class="calendar" id="calendar"></div>
-<div class="legend"><span><i class="dot p"></i>Plantão</span><span><i class="dot f"></i>Folga</span><span><i class="dot v"></i>Férias</span></div>
-<div class="detailPanel" id="dayPanel" style="display:none"></div>
-</div>
-</section>
+    <div class="board-heading"><div><div class="board-title-line"><h2>Quadro de hoje</h2><span class="typeBadge" id="hojeTipo"></span></div><p id="hojeData" class="board-subtitle"></p><p class="board-instruction">Arraste os cartões para mover as tarefas entre as etapas.</p></div><div class="board-heading-actions"><span class="board-date-chip" id="feriasBadge"></span><button class="icon-button" title="Atualizar quadro" onclick="renderHoje()">↻</button></div></div>
+    <div class="board-wrap"><div id="routine" class="kanban-board"></div></div>
+    <div class="next-days-card"><div class="section-heading"><div><h2>Próximos dias</h2><p>Seu ciclo de trabalho e descanso</p></div><button class="text-button" onclick="show('cal',document.querySelectorAll('.nav-link')[2])">Ver calendário <span>→</span></button></div><div class="strip" id="strip"></div></div>
+   </section>
 
-<section id="ajustes" class="view">
-<div class="card">
-<h2>Ciclo de plantão</h2>
-<p class="hint">O app calcula sozinho quais dias são de plantão a partir de uma data conhecida.</p>
-<div class="presetRow">
- <button class="ghost small" onclick="applyPreset(1,3)">24x72</button>
- <button class="ghost small" onclick="applyPreset(1,2)">24x48</button>
- <button class="ghost small" onclick="applyPreset(1,1)">12x36 (aprox.)</button>
-</div>
-<div class="form">
- <div class="field"><label class="lbl">Nome do turno</label><input type="text" id="s_turno"></div>
- <div class="field"><label class="lbl">Dias de plantão seguidos</label><input type="number" min="1" id="s_work" style="width:90px"></div>
- <div class="field"><label class="lbl">Dias de folga seguidos</label><input type="number" min="1" id="s_rest" style="width:90px"></div>
- <div class="field"><label class="lbl">Um dia de plantão conhecido</label><input type="date" id="s_anchor"></div>
-</div>
-<p class="hint" style="margin-top:10px">Regimes com menos de 24h (como 12x36) são aproximados por dia inteiro.</p>
-</div>
-<div class="card">
-<h2>Férias</h2>
-<div class="form">
- <div class="field"><label class="lbl">Início</label><input type="date" id="s_vacStart"></div>
- <div class="field"><label class="lbl">Fim</label><input type="date" id="s_vacEnd"></div>
-</div>
-</div>
-<div class="card">
-<h2>Seus dados</h2>
-<p class="hint">Os dados ficam salvos neste navegador e dispositivo. Exporte uma cópia para transferir ou recuperar suas informações.</p>
-<div class="form">
- <button class="ghost" onclick="exportData()">Baixar cópia de segurança</button>
- <label class="button ghost" for="importFile">Restaurar cópia</label>
- <input type="file" id="importFile" accept="application/json,.json" onchange="importData(this)" hidden>
-</div>
-<p class="hint" id="backupMessage" role="status" aria-live="polite" style="margin-top:10px"></p>
-</div>
-<button onclick="saveSettings()">Salvar ajustes</button>
-</section>
-</main>
+   <section id="rotinas" class="view">
+    <div class="page-heading"><div><p class="eyebrow">MODELOS DE TAREFAS</p><h1>Quadro de rotinas<span class="heading-period">.</span></h1><p class="page-subtitle">Organize o que aparece nos seus dias de plantão e de folga.</p></div></div>
+    <div class="two">
+     <article class="card routine-editor-card"><div class="editor-title"><span class="editor-icon plantao-icon">✚</span><div><h2>Dia de plantão</h2><p>Atividades para seus dias de trabalho</p></div></div><div id="editPlantao"></div><div class="form"><div class="field"><label class="lbl">Hora</label><input type="time" id="np_time"></div><div class="field grow"><label class="lbl">Tarefa</label><input type="text" id="np_title" placeholder="Ex.: Preparar para sair"></div><div class="field grow"><label class="lbl">Detalhe</label><input type="text" id="np_detail" placeholder="Opcional"></div><button onclick="addTask('plantao')">Adicionar</button></div></article>
+     <article class="card routine-editor-card"><div class="editor-title"><span class="editor-icon folga-icon">⌂</span><div><h2>Dia de folga</h2><p>Atividades para seus dias livres</p></div></div><div id="editFolga"></div><div class="form"><div class="field"><label class="lbl">Hora</label><input type="time" id="nf_time"></div><div class="field grow"><label class="lbl">Tarefa</label><input type="text" id="nf_title" placeholder="Ex.: Estudar para concurso"></div><div class="field grow"><label class="lbl">Detalhe</label><input type="text" id="nf_detail" placeholder="Opcional"></div><button onclick="addTask('folga')">Adicionar</button></div></article>
+    </div>
+   </section>
 
-<footer>Desenvolvido por Aline Coutinho</footer>
+   <section id="cal" class="view">
+    <div class="page-heading"><div><p class="eyebrow">PLANEJAMENTO</p><h1>Calendário<span class="heading-period">.</span></h1><p class="page-subtitle">Visualize seu ciclo e ajuste dias específicos quando precisar.</p></div></div>
+    <article class="card calendar-card"><div class="calNav"><button class="icon-button" onclick="changeMonth(-1)" aria-label="Mês anterior">←</button><div class="label" id="calLabel"></div><button class="icon-button" onclick="changeMonth(1)" aria-label="Próximo mês">→</button></div><div class="calendar" id="calendar"></div><div class="legend"><span><i class="dot p"></i>Plantão</span><span><i class="dot f"></i>Folga</span><span><i class="dot v"></i>Férias</span><span><i class="dot override-dot"></i>Dia ajustado</span></div><div class="detailPanel" id="dayPanel" style="display:none"></div></article>
+   </section>
 
+   <section id="ajustes" class="view">
+    <div class="page-heading"><div><p class="eyebrow">PREFERÊNCIAS</p><h1>Ajustes<span class="heading-period">.</span></h1><p class="page-subtitle">Configure seu ciclo, períodos de férias e cópias de segurança.</p></div></div>
+    <article class="card settings-card"><div class="section-heading"><div><h2>Ciclo de plantão</h2><p>Informe um dia conhecido para calcular seu calendário.</p></div></div><div class="presetRow"><button class="preset" onclick="applyPreset(1,3)">24x72</button><button class="preset" onclick="applyPreset(1,2)">24x48</button><button class="preset" onclick="applyPreset(1,1)">12x36 <small>aprox.</small></button></div><div class="form settings-form"><div class="field"><label class="lbl">Nome do turno</label><input type="text" id="s_turno" placeholder="Ex.: Equipe A"></div><div class="field"><label class="lbl">Dias de plantão seguidos</label><input type="number" min="1" id="s_work"></div><div class="field"><label class="lbl">Dias de folga seguidos</label><input type="number" min="1" id="s_rest"></div><div class="field"><label class="lbl">Um dia de plantão conhecido</label><input type="date" id="s_anchor"></div></div><p class="hint">Regimes com menos de 24h (como 12x36) são aproximados por dia inteiro.</p></article>
+    <article class="card settings-card"><div class="section-heading"><div><h2>Férias</h2><p>Marque o período para destacá-lo no calendário.</p></div></div><div class="form"><div class="field"><label class="lbl">Início</label><input type="date" id="s_vacStart"></div><div class="field"><label class="lbl">Fim</label><input type="date" id="s_vacEnd"></div></div></article>
+    <article class="card settings-card"><div class="section-heading"><div><h2>Seus dados</h2><p>Os dados ficam neste navegador. Use uma cópia para transferi-los ou recuperá-los.</p></div></div><div class="form"><button class="secondary-button" onclick="exportData()">↓ Baixar cópia de segurança</button><label class="secondary-button file-button" for="importFile">Restaurar cópia</label><input type="file" id="importFile" accept="application/json,.json" onchange="importData(this)" hidden></div><p class="hint" id="backupMessage" role="status" aria-live="polite"></p></article>
+    <div class="settings-footer"><span>Alterações salvas neste dispositivo.</span><button onclick="saveSettings()">Salvar ajustes</button></div>
+   </section>
+  </main>
+  <footer>Minha Rotina <span>·</span> painel pessoal de produtividade</footer>
+ </div>
+</div>
+<dialog class="task-dialog" id="taskDialog">
+ <form id="newTaskForm" method="dialog" onsubmit="event.preventDefault();addExtraTask()">
+  <div class="dialog-heading"><div><p class="eyebrow">QUADRO DE HOJE</p><h2>Nova tarefa</h2></div><button type="button" class="icon-button" aria-label="Fechar" onclick="document.getElementById('taskDialog').close()">×</button></div>
+  <p class="page-subtitle">Adicione uma tarefa pontual para hoje.</p>
+  <div class="field"><label class="lbl" for="newTaskTitle">Nome da tarefa</label><input id="newTaskTitle" type="text" placeholder="Ex.: Fazer caminhada" required maxlength="120"></div>
+  <div class="field"><label class="lbl" for="newTaskDetail">Detalhes <span class="optional">(opcional)</span></label><input id="newTaskDetail" type="text" placeholder="O que você precisa lembrar?" maxlength="240"></div>
+  <div class="field"><label class="lbl" for="newTaskTime">Horário <span class="optional">(opcional)</span></label><input id="newTaskTime" type="time"></div>
+  <div class="dialog-actions"><button type="button" class="secondary-button" onclick="document.getElementById('taskDialog').close()">Cancelar</button><button type="submit">Adicionar tarefa</button></div>
+ </form>
+</dialog>
 <script src="app.js" defer></script>
 </body>
 </html>

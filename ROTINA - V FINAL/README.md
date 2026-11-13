@@ -1,10 +1,10 @@
 # Minha Rotina
 
-Aplicação web estática para organizar rotinas de plantão, folga e tarefas diárias.
+Painel web estático para organizar tarefas, rotinas de plantão e folga, e calendário pessoal.
 
 ## Como abrir
 
-Abra `ROTINA.html` no navegador. Não precisa instalar dependências nem contratar serviços. O projeto pode ser publicado em hospedagem estática gratuita.
+Abra `ROTINA.html` no navegador. A visão geral funciona como um quadro de fluxo: cada tarefa aparece como cartão em **A fazer**, **Em andamento** ou **Concluído**. Arraste os cartões entre as colunas ou altere a etapa no menu do cartão. Não precisa instalar dependências nem contratar serviços. O projeto pode ser publicado em hospedagem estática gratuita.
 
 ## Dados e privacidade
 
@@ -16,7 +16,7 @@ Os dados de versões anteriores (`appSettings`, `appTemplates`, `appOverrides`, 
 
 ## Arquivos
 
-- `ROTINA.html`: estrutura da aplicação.
+- `ROTINA.html`: estrutura do painel e das telas.
 - `styles.css`: apresentação e adaptação a telas menores.
 - `app.js`: lógica, ciclo de plantão, persistência e backups.
 

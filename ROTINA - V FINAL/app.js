@@ -72,34 +72,61 @@ function importData(input){
 function getCheckState(date,taskId){
  if(!checks[date]) checks[date]={};
  const entry=checks[date][taskId];
- if(entry===undefined) return {done:false,time:null};
- if(typeof entry==='boolean') return {done:entry,time:null};
- return entry;
+ if(entry===undefined) return {done:false,time:null,status:'todo'};
+ if(typeof entry==='boolean') return {done:entry,time:null,status:entry?'done':'todo'};
+ const status=entry.status||(entry.done?'done':'todo');
+ return {...entry,status,done:status==='done'||!!entry.done};
 }
 function setCheckDone(date,taskId,done){
- if(!checks[date]) checks[date]={};
- const cur=getCheckState(date,taskId);
- checks[date][taskId]={done,time:cur.time};
- saveAll(); renderHoje();
+ setTaskStatus(date,taskId,done?'done':'todo');
 }
 function setCheckTime(date,taskId,time){
  if(!checks[date]) checks[date]={};
  const cur=getCheckState(date,taskId);
- checks[date][taskId]={done:cur.done,time};
+ checks[date][taskId]={...cur,time};
  saveAll(); renderHoje();
 }
 function addExtraTask(){
- const time=document.getElementById('ex_time').value;
- const title=document.getElementById('ex_title').value.trim();
- const detail=document.getElementById('ex_detail').value.trim();
- if(!time||!title) return;
+ const time=document.getElementById('newTaskTime').value;
+ const title=document.getElementById('newTaskTitle').value.trim();
+ const detail=document.getElementById('newTaskDetail').value.trim();
+ if(!title) return;
  const t=todayStr();
  if(!dayExtras[t]) dayExtras[t]=[];
  dayExtras[t].push({id:'x'+Date.now(),time,title,detail});
- document.getElementById('ex_time').value='';
- document.getElementById('ex_title').value='';
- document.getElementById('ex_detail').value='';
+ document.getElementById('newTaskForm').reset();
+ document.getElementById('taskDialog').close();
  saveAll(); renderHoje();
+}
+function setTaskStatus(date,taskId,status){
+ if(!['todo','doing','done'].includes(status)) return;
+ if(!checks[date]) checks[date]={};
+ const current=getCheckState(date,taskId);
+ checks[date][taskId]={...current,status,done:status==='done',time:current.time};
+ saveAll();renderHoje();
+}
+function dragTask(event,date,taskId){
+ event.dataTransfer.effectAllowed='move';
+ event.dataTransfer.setData('text/plain',JSON.stringify({date,taskId}));
+ event.currentTarget.classList.add('dragging');
+}
+function allowTaskDrop(event){
+ event.preventDefault();
+ event.dataTransfer.dropEffect='move';
+ event.currentTarget.classList.add('drop-active');
+}
+function clearDropState(event){event.currentTarget.classList.remove('drop-active')}
+function dropTask(event,status){
+ event.preventDefault();
+ const column=event.currentTarget;
+ column.classList.remove('drop-active');
+ try{const item=JSON.parse(event.dataTransfer.getData('text/plain'));setTaskStatus(item.date,item.taskId,status)}catch(e){return}
+}
+function focusNewTask(){
+ const dialog=document.getElementById('taskDialog');
+ document.getElementById('newTaskTime').value='';
+ dialog.showModal();
+ document.getElementById('newTaskTitle').focus();
 }
 function removeExtraTask(date,id){
  dayExtras[date]=(dayExtras[date]||[]).filter(x=>x.id!==id);
@@ -120,10 +147,12 @@ function isConfigured(){ return !!settings.anchor; }
 function show(id,el){
  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
  document.getElementById(id).classList.add('active');
- document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('.nav-link').forEach(x=>x.classList.remove('active'));
  el.classList.add('active');
- document.querySelectorAll('.tab').forEach(x=>x.removeAttribute('aria-current'));
+ document.querySelectorAll('.nav-link').forEach(x=>x.removeAttribute('aria-current'));
  el.setAttribute('aria-current','page');
+ const titles={dia:'Visão geral',rotinas:'Quadro de rotinas',cal:'Calendário',ajustes:'Ajustes'};
+ document.getElementById('viewTitle').textContent=titles[id]||'Minha Rotina';
  if(id==='cal') renderCalendar();
  if(id==='rotinas') renderEditors();
  if(id==='ajustes') fillSettingsForm();
@@ -135,32 +164,25 @@ function renderHoje(){
  const type=dayType(t);
  const ferias=isFerias(t);
  document.getElementById('hojeData').textContent=`Hoje — ${weekdayName(t)}, ${fmtBR(t)}`;
+ document.getElementById('todayLongDate').textContent=new Date(t+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
  const tb=document.getElementById('hojeTipo');
  tb.className='typeBadge '+type;
  tb.textContent=(type==='plantao'?`🚑 Dia de plantão${settings.turno?' — '+settings.turno:''}`:'🏡 Dia de folga')+(ferias?' · Férias':'');
 
  const ob=document.getElementById('onboarding');
- ob.innerHTML = isConfigured() ? '' : `<div class="notice"><span>Configure seu ciclo de plantão para a rotina se ajustar sozinha.</span><button class="small" onclick="show('ajustes',document.querySelectorAll('.tab')[3])">Configurar agora</button></div>`;
+ ob.innerHTML = isConfigured() ? '' : `<div class="notice"><span>Configure seu ciclo de plantão para a rotina se ajustar sozinha.</span><button class="small" onclick="show('ajustes',document.querySelectorAll('.nav-link')[3])">Configurar agora</button></div>`;
 
  const baseTasks=templates[type].map(tk=>({...tk,extra:false}));
  const extraTasks=(dayExtras[t]||[]).map(tk=>({...tk,extra:true}));
  const tasks=[...baseTasks,...extraTasks].sort((a,b)=>{
-   const ta=getCheckState(t,a.id).time||a.time, tb=getCheckState(t,b.id).time||b.time;
+   const ta=getCheckState(t,a.id).time||a.time||'', tb=getCheckState(t,b.id).time||b.time||'';
    return ta.localeCompare(tb);
  });
  if(!checks[t]) checks[t]={};
- document.getElementById('routine').innerHTML=tasks.map(task=>{
-  const st=getCheckState(t,task.id);
-  const shownTime=st.time||task.time;
-  return `
-  <div class="row">
-   <input class="timeInput" type="time" value="${shownTime}" onchange="setCheckTime('${t}','${task.id}',this.value)">
-   <div><div class="task">${escapeHTML(task.title)}${task.extra?'<span class="extraTag">extra de hoje</span>':''}</div>${task.detail?`<div class="detail">${escapeHTML(task.detail)}</div>`:''}</div>
-   <div style="display:flex;align-items:center;gap:6px">
-    <input class="check" type="checkbox" ${st.done?'checked':''} onchange="setCheckDone('${t}','${task.id}',this.checked)">
-    ${task.extra?`<button class="removeX" onclick="removeExtraTask('${t}','${task.id}')">✕</button>`:''}
-   </div>
-  </div>`;
+ const columns=[{key:'todo',title:'A fazer',hint:'Na fila'},{key:'doing',title:'Em andamento',hint:'Em foco'},{key:'done',title:'Concluído',hint:'Feito por hoje'}];
+ document.getElementById('routine').innerHTML=columns.map(column=>{
+  const items=tasks.filter(task=>getCheckState(t,task.id).status===column.key);
+  return `<section class="kanban-column ${column.key}-column" ondragover="allowTaskDrop(event)" ondragleave="clearDropState(event)" ondrop="dropTask(event,'${column.key}')"><div class="column-header"><div><span class="column-indicator"></span><h3>${column.title}</h3><span class="column-count">${items.length}</span></div><small>${column.hint}</small></div><div class="task-list">${items.map(task=>renderTaskCard(task,t,column.key)).join('')||`<div class="empty-column">${column.key==='done'?'As tarefas concluídas aparecem aqui.':'Nenhuma tarefa nesta etapa.'}</div>`}</div></section>`;
  }).join('');
  updateProgress(t,tasks);
 
@@ -174,11 +196,24 @@ function renderHoje(){
  }
  document.getElementById('strip').innerHTML=strip;
 }
+function renderTaskCard(task,date,status){
+ const state=getCheckState(date,task.id);
+ const shortId=String(task.id).slice(-4).toUpperCase();
+ const select=`<select class="task-status-select" aria-label="Status de ${escapeAttr(task.title)}" onchange="setTaskStatus('${date}','${task.id}',this.value)"><option value="todo" ${status==='todo'?'selected':''}>A fazer</option><option value="doing" ${status==='doing'?'selected':''}>Em andamento</option><option value="done" ${status==='done'?'selected':''}>Concluído</option></select>`;
+ return `<article class="task-card ${status==='done'?'completed':''}" draggable="true" ondragstart="dragTask(event,'${date}','${task.id}')" ondragend="this.classList.remove('dragging')"><div class="task-card-head"><span class="task-id">${task.extra?'PESSOAL':'ROT'}-${shortId}</span>${select}</div><h4>${escapeHTML(task.title)}</h4>${task.detail?`<p class="task-description">${escapeHTML(task.detail)}</p>`:''}<div class="task-card-foot"><label class="task-time"><span>HORÁRIO</span><input type="time" value="${state.time||task.time}" onchange="setCheckTime('${date}','${task.id}',this.value)" aria-label="Horário de ${escapeAttr(task.title)}"></label>${task.extra?`<button class="remove-task" aria-label="Remover ${escapeAttr(task.title)}" onclick="removeExtraTask('${date}','${task.id}')">×</button>`:`<span class="task-category">${dayType(date)==='plantao'?'Plantão':'Folga'}</span>`}</div></article>`;
+}
 function updateProgress(date,tasks){
- const n=tasks.filter(t=>getCheckState(date,t.id).done).length;
+ const states=tasks.map(t=>getCheckState(date,t.id).status);
+ const n=states.filter(status=>status==='done').length;
+ const doing=states.filter(status=>status==='doing').length;
+ const todo=states.filter(status=>status==='todo').length;
  const p=tasks.length? Math.round(n/tasks.length*100):0;
  document.getElementById('pct').textContent=p+'%';
  document.getElementById('bar').style.width=p+'%';
+ document.getElementById('doneCount').textContent=n;
+ document.getElementById('doingCount').textContent=doing;
+ document.getElementById('todoCount').textContent=todo;
+ document.getElementById('totalCount').textContent=tasks.length;
 }
 
 // ---------- ROTINAS (edição) ----------
@@ -236,7 +271,7 @@ function renderCalendar(){
  const first=new Date(calYear,calMonth,1).getDay();
  const days=new Date(calYear,calMonth+1,0).getDate();
  const t=todayStr();
- ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(x=>box.innerHTML+=`<div style="font-weight:700;padding:4px;font-size:12px">${x}</div>`);
+ ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(x=>box.innerHTML+=`<div class="weekday">${x}</div>`);
  for(let i=0;i<first;i++) box.innerHTML+='<div class="day empty"></div>';
  for(let d=1;d<=days;d++){
   const s=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -315,5 +350,4 @@ fillSettingsForm();
 saveAll();
 renderFeriasBadge();
 renderHoje();
-
 
