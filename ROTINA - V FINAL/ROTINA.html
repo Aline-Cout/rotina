@@ -8,13 +8,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=escala-manual">
+<link rel="stylesheet" href="styles.css?v=auth-tabs-20261113">
 </head>
 <body>
 <section class="auth-screen" id="authScreen" aria-labelledby="authTitle">
  <div class="auth-card"><a class="brand auth-brand" href="#inicio"><span class="brand-mark">R</span><span>rotina<span class="brand-dot">.</span></span></a><p class="eyebrow">SEU ESPAÇO, EM QUALQUER DISPOSITIVO</p><h1 id="authTitle">Entrar na minha rotina</h1><p class="page-subtitle">Entre com seu e-mail e senha para sincronizar seu quadro.</p>
+  <div class="auth-mode-tabs" role="group" aria-label="Escolha como acessar"><button class="auth-mode-tab active" id="loginModeButton" type="button" aria-pressed="true" onclick="setAuthMode('login')">Entrar</button><button class="auth-mode-tab" id="signupModeButton" type="button" aria-pressed="false" onclick="setAuthMode('signup')">Criar conta</button></div>
   <form id="authForm" onsubmit="submitAuth(event)"><label class="lbl" for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" required placeholder="voce@exemplo.com"><label class="lbl" for="authPassword">Senha</label><input id="authPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="Mínimo de 6 caracteres"><button class="auth-submit" id="authSubmit" type="submit">Entrar</button></form>
-  <button class="auth-link" type="button" onclick="resetPassword()">Esqueci minha senha</button><button class="auth-link" id="authSwitch" type="button" data-mode="signup" onclick="setAuthMode(this.dataset.mode)">Ainda não tenho conta · Criar conta</button><p id="authMessage" class="auth-message" role="status" aria-live="polite"></p><p class="auth-note">Use a senha criada para este app. Ela pode ser diferente da senha do seu Gmail.</p>
+  <button class="auth-link" type="button" onclick="resetPassword()">Esqueci minha senha</button><p id="authMessage" class="auth-message" role="status" aria-live="polite"></p><p class="auth-note">Use a senha criada para este app. Ela pode ser diferente da senha do seu Gmail.</p>
  </div>
 </section>
 <section class="auth-screen" id="dataChoiceScreen" aria-labelledby="dataChoiceTitle" hidden>
@@ -112,7 +113,7 @@
 <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js" defer></script>
-<script src="app.js?v=rotina-base-cards-20261113" defer></script>
+<script src="app.js?v=auth-tabs-20261113" defer></script>
 </body>
 </html>
 
