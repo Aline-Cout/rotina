@@ -37,11 +37,15 @@ let dayExtras=(storedApp&&storedApp.dayExtras)||readStored('appDayExtras',{});
 let calYear,calMonth,selectedDate=null;
 {const t=new Date();calYear=t.getFullYear();calMonth=t.getMonth();}
 
-function saveAll(){
+function appData(){return {version:1,settings,templates,overrides,checks,dayExtras}}
+let cloudUser=null,cloudReady=false,cloudUnsubscribe=null,cloudTimer=null,lastCloudJSON='';
+function saveAll(sync=true){
  try{
-  localStorage.setItem('rotinaAppData',JSON.stringify({version:1,settings,templates,overrides,checks,dayExtras}));
+  const serialized=JSON.stringify(appData());
+  localStorage.setItem('rotinaAppData',serialized);
   const status=document.getElementById('saveStatus');
-  if(status){status.textContent='Salvo neste dispositivo';status.classList.remove('error')}
+  if(status){status.textContent=cloudUser?'Salvo neste dispositivo · sincronizando…':'Salvo neste dispositivo';status.classList.remove('error')}
+  if(sync&&cloudReady&&cloudUser){clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>writeCloud(serialized),450)}
   return true;
  }catch(e){
   const status=document.getElementById('saveStatus');
@@ -49,6 +53,22 @@ function saveAll(){
   return false;
  }
 }
+function applyAppData(data){
+ if(!data)return;
+ settings=data.settings||settings;templates=data.templates||templates;overrides=data.overrides||{};checks=data.checks||{};dayExtras=data.dayExtras||{};
+ localStorage.setItem('rotinaAppData',JSON.stringify(appData()));
+ fillSettingsForm();renderFeriasBadge();renderHoje();renderEditors();renderCalendar();
+}
+function setSaveMessage(message,error=false){const el=document.getElementById('saveStatus');if(el){el.textContent=message;el.classList.toggle('error',error)}}
+function firebaseConfigured(){const c=window.ROUTINA_FIREBASE_CONFIG||{};return !!(c.apiKey&&c.authDomain&&c.projectId&&c.appId&&!c.apiKey.includes('PREENCHER'))}
+function setAuthMessage(message,error=false){const el=document.getElementById('authMessage');if(el){el.textContent=message;el.classList.toggle('error',error)}}
+function setAuthMode(mode){const signup=mode==='signup';document.getElementById('authTitle').textContent=signup?'Criar conta grátis':'Entrar na minha rotina';document.getElementById('authSubmit').textContent=signup?'Criar conta':'Entrar';document.getElementById('authSwitch').textContent=signup?'Já tenho uma conta · Entrar':'Ainda não tenho conta · Criar conta';document.getElementById('authSwitch').dataset.mode=signup?'login':'signup';document.getElementById('authPassword').autocomplete=signup?'new-password':'current-password';setAuthMessage('')}
+async function submitAuth(event){event.preventDefault();if(!window.routineAuth)return;const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;try{setAuthMessage('Conectando…');if(document.getElementById('authSwitch').dataset.mode==='login')await window.routineAuth.signInWithEmailAndPassword(email,password);else await window.routineAuth.createUserWithEmailAndPassword(email,password)}catch(e){const msgs={ 'auth/invalid-email':'Confira o endereço de e-mail.','auth/user-not-found':'Conta não encontrada. Crie uma conta ou confira o e-mail.','auth/wrong-password':'Senha incorreta.','auth/invalid-credential':'E-mail ou senha inválidos.','auth/email-already-in-use':'Este e-mail já possui conta. Entre nela.','auth/weak-password':'Use uma senha com pelo menos 6 caracteres.','auth/operation-not-allowed':'Ative E-mail/senha na configuração de autenticação do Firebase.'};setAuthMessage(msgs[e.code]||'Não foi possível entrar. Confira sua conexão e a configuração Firebase.',true)}}
+async function resetPassword(){const email=document.getElementById('authEmail').value.trim();if(!email){setAuthMessage('Informe seu e-mail para receber o link de redefinição.',true);return}try{await window.routineAuth.sendPasswordResetEmail(email);setAuthMessage('Enviamos um link para redefinir sua senha.')}catch(e){setAuthMessage('Não foi possível enviar o link. Confira o e-mail e a configuração Firebase.',true)}}
+async function signOutUser(){if(window.routineAuth)await window.routineAuth.signOut()}
+async function writeCloud(serialized){if(!cloudReady||!cloudUser)return;try{setSaveMessage('Sincronizando…');await window.routineDoc(cloudUser.uid).set(JSON.parse(serialized));lastCloudJSON=serialized;setSaveMessage('Sincronizado com sua conta')}catch(e){setSaveMessage('Sem conexão · dados salvos neste dispositivo',true)}}
+function loadCloudUser(user){cloudUser=user;cloudReady=false;if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null}if(!user){document.getElementById('authScreen').hidden=false;document.getElementById('appShell').hidden=true;cloudUser=null;return}document.getElementById('authScreen').hidden=true;document.getElementById('appShell').hidden=false;document.getElementById('accountEmail').textContent=user.email||'Conta';const ref=window.routineDoc(user.uid);cloudUnsubscribe=ref.onSnapshot(snapshot=>{if(snapshot.exists){const data=snapshot.data(),serialized=JSON.stringify(data);if(serialized!==lastCloudJSON){applyAppData(data);lastCloudJSON=serialized}cloudReady=true;setSaveMessage('Sincronizado com sua conta')}else if(!cloudReady){cloudReady=true;writeCloud(JSON.stringify(appData()))}},()=>{cloudReady=true;setSaveMessage('Sem conexão · dados salvos neste dispositivo',true)})}
+function initCloud(){if(!firebaseConfigured()||!window.firebase){document.getElementById('authScreen').hidden=true;document.getElementById('appShell').hidden=false;setSaveMessage('Salvo neste dispositivo');return}try{firebase.initializeApp(window.ROUTINA_FIREBASE_CONFIG);window.routineAuth=firebase.auth();const db=firebase.firestore();window.routineDoc=uid=>db.collection('users').doc(uid).collection('appData').doc('main');window.routineAuth.onAuthStateChanged(loadCloudUser)}catch(e){document.getElementById('authScreen').hidden=false;document.getElementById('appShell').hidden=true;setAuthMessage('Falha ao iniciar Firebase. Confira firebase-config.js.',true)}}
 function exportData(){
  const backup={app:'Minha Rotina',version:1,exportedAt:new Date().toISOString(),settings,templates,overrides,checks,dayExtras};
  const url=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}));
@@ -350,4 +370,7 @@ fillSettingsForm();
 saveAll();
 renderFeriasBadge();
 renderHoje();
+setAuthMode('login');
+initCloud();
+
 

@@ -11,7 +11,13 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="app-shell">
+<section class="auth-screen" id="authScreen" aria-labelledby="authTitle">
+ <div class="auth-card"><a class="brand auth-brand" href="#inicio"><span class="brand-mark">R</span><span>rotina<span class="brand-dot">.</span></span></a><p class="eyebrow">SEU ESPAÇO, EM QUALQUER DISPOSITIVO</p><h1 id="authTitle">Entrar na minha rotina</h1><p class="page-subtitle">Entre com seu e-mail e senha para sincronizar seu quadro.</p>
+  <form id="authForm" onsubmit="submitAuth(event)"><label class="lbl" for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" required placeholder="voce@exemplo.com"><label class="lbl" for="authPassword">Senha</label><input id="authPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="Mínimo de 6 caracteres"><button class="auth-submit" id="authSubmit" type="submit">Entrar</button></form>
+  <button class="auth-link" type="button" onclick="resetPassword()">Esqueci minha senha</button><button class="auth-link" id="authSwitch" type="button" data-mode="signup" onclick="setAuthMode(this.dataset.mode)">Ainda não tenho conta · Criar conta</button><p id="authMessage" class="auth-message" role="status" aria-live="polite"></p><p class="auth-note">A conta usa e-mail e senha. Não é necessário entrar com Google.</p>
+ </div>
+</section>
+<div class="app-shell" id="appShell" hidden>
  <aside class="sidebar">
   <a class="brand" href="#inicio" aria-label="Minha Rotina, início"><span class="brand-mark">R</span><span>rotina<span class="brand-dot">.</span></span></a>
   <div class="workspace-label">MEU ESPAÇO</div>
@@ -29,7 +35,7 @@
  <div class="workspace">
   <header class="topbar">
    <div class="breadcrumbs"><span>Meu espaço</span><span class="crumb-separator">/</span><strong id="viewTitle">Visão geral</strong></div>
-   <div class="topbar-right"><span class="saveStatus" id="saveStatus" role="status" aria-live="polite">Salvo neste dispositivo</span><span class="top-avatar" aria-label="Aline">A</span></div>
+   <div class="topbar-right"><span class="saveStatus" id="saveStatus" role="status" aria-live="polite">Salvo neste dispositivo</span><span class="account-email" id="accountEmail"></span><button class="auth-link signout" onclick="signOutUser()">Sair</button><span class="top-avatar" aria-label="Perfil">A</span></div>
   </header>
 
   <main class="content">
@@ -86,7 +92,12 @@
   <div class="dialog-actions"><button type="button" class="secondary-button" onclick="document.getElementById('taskDialog').close()">Cancelar</button><button type="submit">Adicionar tarefa</button></div>
  </form>
 </dialog>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js" defer></script>
 <script src="app.js" defer></script>
 </body>
 </html>
+
 
