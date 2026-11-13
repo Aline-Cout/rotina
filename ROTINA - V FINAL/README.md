@@ -6,6 +6,8 @@ Painel responsivo de organização pessoal em formato de quadro. O app está pub
 
 Acesse [Minha Rotina](https://aline-cout.github.io/rotina/ROTINA%20-%20V%20FINAL/ROTINA.html) no computador ou celular. Crie uma conta com seu e-mail e uma senha própria do app, que pode ser diferente da senha do Gmail. Use essa mesma conta nos outros aparelhos. Se esquecer a senha, o link de redefinição oferece retorno ao app para entrar com a nova senha.
 
+A escala é opcional. Sem um ciclo configurado, os dias aparecem como **Sem escala**; selecione um dia no calendário ou em **Próximos dias** para definir plantão ou folga. Se preferir, configure um ciclo como 1 dia de trabalho e 3 de folga. No quadro, mova os cartões entre as colunas para atualizar o andamento.
+
 Se este navegador tiver dados de uma versão antiga, o app perguntará antes de importá-los para a nuvem. Confira se a cópia pertence a você. Em Ajustes, baixe um backup JSON, restaure uma cópia ou exclua sua conta e os dados sincronizados.
 
 ## Privacidade e beta
