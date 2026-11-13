@@ -49,5 +49,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,label:focus-visibl
 .account-email{font-size:10px;color:#7e8992;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .signout{padding:4px}
 @media(max-width:700px){.account-email{display:none}.auth-card{padding:27px 22px}}
+.danger-button{border:1px solid #e7c6c2;border-radius:7px;background:#fff7f6;color:#9d3f38;padding:9px 12px;font-size:11px;font-weight:650;cursor:pointer}.danger-button:hover{background:#faecea;border-color:#d9aaa5}
+.choice-options{display:grid;gap:10px;margin-top:22px}.choice-options .auth-link{text-align:center}
+.board-instruction{max-width:560px}
+@media(max-width:700px){.sidebar{gap:8px}.side-nav .nav-link:nth-child(2){display:flex}.side-nav{min-width:0;max-width:calc(100vw - 75px);overflow-x:auto;scrollbar-width:none}.side-nav::-webkit-scrollbar{display:none}.side-nav .nav-link{flex:0 0 auto}.board-instruction{font-size:10px}}
+@media(max-width:420px){.sidebar{gap:7px}.brand{flex:0 0 auto}.side-nav{max-width:calc(100vw - 58px);gap:2px}.side-nav .nav-link{font-size:9px;padding:8px 5px;gap:3px}.side-nav .nav-icon{font-size:13px}.board-heading{gap:8px}.board-instruction{max-width:245px}}
+.privacy-page{padding:24px}.privacy-card{width:min(100%,760px);margin:24px auto;padding:clamp(22px,5vw,44px);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.privacy-card .brand{padding:0 0 28px}.privacy-card h1{font-size:clamp(25px,5vw,34px);letter-spacing:-.8px;margin:6px 0}.privacy-card h2{font-size:16px;margin:25px 0 7px}.privacy-card p{color:#66727d;font-size:13px;line-height:1.7;margin:10px 0}.privacy-card .page-subtitle{margin-bottom:24px}.privacy-card .secondary-button{margin-top:15px;text-decoration:none}
 
 
