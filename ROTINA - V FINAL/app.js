@@ -27,6 +27,40 @@ function defaultTemplates(){
  };
 }
 
+const activitySuggestions=[
+ {group:'Começo e fim do dia',items:[
+  ['☀️ Acordar com calma','Levantar, abrir a janela e começar sem pressa','07:00'],
+  ['🛏️ Arrumar a cama','Deixar o quarto organizado','07:10'],
+  ['🗓️ Planejar o dia','Escolher até três prioridades','07:30'],
+  ['🌙 Preparar para dormir','Desacelerar e deixar o dia seguinte encaminhado','21:30']
+ ]},
+ {group:'Saúde e bem-estar',items:[
+  ['💧 Beber água','Fazer uma pausa para se hidratar','09:00'],
+  ['🏃 Fazer exercício','Caminhada, treino ou atividade que você goste','08:00'],
+  ['🧘 Alongar e respirar','Alguns minutos para relaxar o corpo','10:00'],
+  ['🥗 Fazer uma refeição','Reservar um momento para comer com atenção','12:00']
+ ]},
+ {group:'Casa e vida pessoal',items:[
+  ['🧹 Organizar um espaço','Escolher uma pequena tarefa da casa','10:30'],
+  ['🧺 Cuidar das roupas','Separar, lavar ou guardar roupas','11:00'],
+  ['🛒 Resolver uma pendência','Mercado, farmácia ou outra tarefa externa','15:00'],
+  ['👨‍👩‍👧 Tempo com pessoas queridas','Separar um momento sem distrações','19:00']
+ ]},
+ {group:'Trabalho e estudos',items:[
+  ['🎯 Avançar em uma prioridade','Dedicar um bloco de foco à tarefa mais importante','09:00'],
+  ['📚 Estudar ou praticar','Avançar em um curso, leitura ou projeto pessoal','14:00'],
+  ['📨 Conferir mensagens','Responder o que for importante e organizar o restante','10:00'],
+  ['✅ Revisar tarefas','Atualizar o que foi concluído e o que ficou pendente','17:00']
+ ]},
+ {group:'Pausas e descanso',items:[
+  ['☕ Fazer uma pausa','Levantar, descansar os olhos e respirar','10:30'],
+  ['🍃 Tomar um ar','Dar uma volta ou ficar um pouco ao ar livre','16:00'],
+  ['🎨 Fazer algo por prazer','Hobby, música, leitura ou atividade criativa','18:00'],
+  ['📵 Desconectar das telas','Reservar um tempo offline antes de dormir','20:30']
+ ]}
+];
+const flatActivitySuggestions=activitySuggestions.flatMap(group=>group.items.map(item=>({...item,group:group.group})));
+
 function readStored(key,fallback){try{const value=localStorage.getItem(key);return value===null?fallback:JSON.parse(value)}catch(e){return fallback}}
 const storedApp=readStored('rotinaAppData',null);
 const hasLegacyStandaloneData=['appSettings','appTemplates','appOverrides','appChecks','appDayExtras'].some(key=>localStorage.getItem(key)!==null);
@@ -316,6 +350,16 @@ function updateProgress(date,tasks){
 function renderEditors(){
  renderEditorList('plantao');
  renderEditorList('folga');
+ renderActivitySuggestions('plantao');
+ renderActivitySuggestions('folga');
+}
+function renderActivitySuggestions(type){
+ const el=document.getElementById(type==='plantao'?'suggestPlantao':'suggestFolga');
+ if(!el)return;
+ el.innerHTML=activitySuggestions.map(group=>`<section class="suggestion-group"><h3>${escapeHTML(group.group)}</h3><div>${group.items.map(item=>{
+  const index=flatActivitySuggestions.findIndex(suggestion=>suggestion[0]===item[0]);
+  return `<button type="button" class="suggestion-button" onclick="addSuggestedTask('${type}',${index})"><span>${escapeHTML(item[0])}</span><small>${escapeHTML(item[1])}</small></button>`;
+ }).join('')}</div></section>`).join('');
 }
 function renderEditorList(type){
  const el=document.getElementById(type==='plantao'?'editPlantao':'editFolga');
@@ -349,6 +393,14 @@ function addTask(type){
  document.getElementById(prefix+'title').value='';
  document.getElementById(prefix+'detail').value='';
  saveAll(); renderEditorList(type); renderHoje();
+}
+function addSuggestedTask(type,index){
+ const suggestion=flatActivitySuggestions[index];
+ if(!suggestion||!templates[type])return;
+ templates[type].push({id:`${type[0]}${Date.now()}${Math.floor(Math.random()*1000)}`,time:suggestion[2],title:suggestion[0],detail:suggestion[1]});
+ saveAll();renderEditorList(type);renderHoje();
+ const details=document.getElementById(type==='plantao'?'suggestPlantao':'suggestFolga')?.closest('details');
+ if(details)details.open=true;
 }
 
 // ---------- CALENDÁRIO ----------
