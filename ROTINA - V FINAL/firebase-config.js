@@ -2,9 +2,9 @@
 // Preencha com os dados de Configurações do projeto > Seus apps > App da Web.
 // As regras do Firestore protegem os dados por usuário; não coloque senhas aqui.
 window.ROUTINA_FIREBASE_CONFIG = {
-  apiKey: "PREENCHER_API_KEY",
-  authDomain: "PREENCHER_PROJECT_ID.firebaseapp.com",
-  projectId: "PREENCHER_PROJECT_ID",
-  appId: "PREENCHER_APP_ID"
+  apiKey: "AIzaSyBXCcrrVHYqngninVL4nJfZguXgkuUE9pE",
+  authDomain: "minha-rotinha-organizacao.firebaseapp.com",
+  projectId: "minha-rotinha-organizacao",
+  appId: "1:922548214776:web:766ab29b76f30baeca940d"
 };
 
