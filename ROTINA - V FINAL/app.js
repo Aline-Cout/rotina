@@ -7,45 +7,53 @@ const daysBetween=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:
 function defaultTemplates(){
  return {
   folga:[
-   {id:'f1',time:'06:30',title:'☀️ Acordar',detail:'Água, higiene e arrumar a cama'},
-   {id:'f2',time:'07:00',title:'🏋️ Cross',detail:'Treino ou mobilidade/caminhada'},
-   {id:'f3',time:'08:30',title:'🏠 Casa',detail:'20–30 min de manutenção'},
-   {id:'f4',time:'09:30',title:'📖 Concurso',detail:'Teoria + questões'},
-   {id:'f5',time:'11:30',title:'🍽️ Almoço',detail:'Pausa sem culpa'},
-   {id:'f6',time:'13:30',title:'💻 TI',detail:'Prática, projetos e portfólio'},
-   {id:'f7',time:'16:00',title:'📱 Redes sociais',detail:'30–45 min com objetivo definido'},
-   {id:'f8',time:'17:00',title:'🏠 Casa / pessoal',detail:'Uma tarefa maior'},
-   {id:'f9',time:'20:00',title:'📚 Revisão',detail:'Concurso ou TI'},
-   {id:'f10',time:'22:30',title:'🌙 Desacelerar',detail:'Evitar telas'}
+   {id:'f1',time:'07:00',title:'☀️ Começar o dia',detail:'Defina um ritmo que funcione para você'},
+   {id:'f2',time:'08:00',title:'🏃 Movimento',detail:'Treino, caminhada ou alongamento'},
+   {id:'f3',time:'09:00',title:'🏠 Organizar o espaço',detail:'Uma pequena tarefa de casa'},
+   {id:'f4',time:'10:00',title:'🎯 Prioridade do dia',detail:'Avance em uma tarefa importante'},
+   {id:'f5',time:'12:00',title:'🍽️ Pausa para almoço',detail:'Descanse e recarregue'},
+   {id:'f6',time:'14:00',title:'📚 Aprender algo',detail:'Estudo, leitura ou prática'},
+   {id:'f7',time:'16:00',title:'☕ Fazer uma pausa',detail:'Um intervalo longe das telas'},
+   {id:'f8',time:'17:00',title:'🧹 Resolver pendências',detail:'Escolha o que cabe no seu dia'},
+   {id:'f9',time:'20:00',title:'✅ Revisar o dia',detail:'Anote o que deseja continuar amanhã'},
+   {id:'f10',time:'22:00',title:'🌙 Desacelerar',detail:'Prepare-se para descansar'}
   ],
   plantao:[
-   {id:'p1',time:'06:00',title:'☀️ Acordar',detail:'Café leve antes do turno'},
-   {id:'p2',time:'06:30',title:'🎒 Preparar',detail:'Organizar material e sair'},
-   {id:'p3',time:'08:00',title:'🚑 Plantão',detail:'Turno de 24h — foco no trabalho'},
-   {id:'p4',time:'20:00',title:'💧 Autocuidado',detail:'Hidratação e descanso quando possível'}
+   {id:'p1',time:'06:00',title:'☀️ Começar o dia',detail:'Organize-se antes do turno'},
+   {id:'p2',time:'07:00',title:'🎒 Preparar para o trabalho',detail:'Confira o que precisa levar'},
+   {id:'p3',time:'08:00',title:'🧭 Início do turno',detail:'Priorize as tarefas do trabalho'},
+   {id:'p4',time:'12:00',title:'💧 Pausa e hidratação',detail:'Faça uma pausa quando puder'}
   ]
  };
 }
 
 function readStored(key,fallback){try{const value=localStorage.getItem(key);return value===null?fallback:JSON.parse(value)}catch(e){return fallback}}
 const storedApp=readStored('rotinaAppData',null);
+const hasLegacyStandaloneData=['appSettings','appTemplates','appOverrides','appChecks','appDayExtras'].some(key=>localStorage.getItem(key)!==null);
 let settings=(storedApp&&storedApp.settings)||readStored('appSettings',{turno:'Delta',work:1,rest:3,anchor:'',vacStart:'',vacEnd:''});
 let templates=(storedApp&&storedApp.templates)||readStored('appTemplates',defaultTemplates());
 let overrides=(storedApp&&storedApp.overrides)||readStored('appOverrides',{});
 let checks=(storedApp&&storedApp.checks)||readStored('appChecks',{});
 let dayExtras=(storedApp&&storedApp.dayExtras)||readStored('appDayExtras',{});
+const legacyDataSnapshot=storedApp||(hasLegacyStandaloneData?{version:1,settings,templates,overrides,checks,dayExtras}:null);
 let calYear,calMonth,selectedDate=null;
 {const t=new Date();calYear=t.getFullYear();calMonth=t.getMonth();}
 
 function appData(){return {version:1,settings,templates,overrides,checks,dayExtras}}
-let cloudUser=null,cloudReady=false,cloudUnsubscribe=null,cloudTimer=null,lastCloudJSON='';
+const LEGACY_STORAGE_KEY='rotinaAppData';
+const accountStorageKey=uid=>`rotinaAppData:user:${uid}`;
+let cloudUser=null,cloudReady=false,cloudUnsubscribe=null,cloudTimer=null,lastCloudJSON='',pendingDataChoice=null,cloudWritePending=false;
+function readLocalAppData(key){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null}catch(e){return null}}
+function readDeviceData(uid){return readLocalAppData(accountStorageKey(uid))||readLocalAppData(LEGACY_STORAGE_KEY)||legacyDataSnapshot}
+function saveLocalAppData(serialized){if(!cloudUser&&firebaseConfigured())return;localStorage.setItem(cloudUser?accountStorageKey(cloudUser.uid):LEGACY_STORAGE_KEY,serialized)}
+function showMainApp(){document.getElementById('dataChoiceScreen').hidden=true;document.getElementById('authScreen').hidden=true;document.getElementById('appShell').hidden=false}
 function saveAll(sync=true){
  try{
   const serialized=JSON.stringify(appData());
-  localStorage.setItem('rotinaAppData',serialized);
+  saveLocalAppData(serialized);
   const status=document.getElementById('saveStatus');
   if(status){status.textContent=cloudUser?'Salvo neste dispositivo · sincronizando…':'Salvo neste dispositivo';status.classList.remove('error')}
-  if(sync&&cloudReady&&cloudUser){clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>writeCloud(serialized),450)}
+  if(sync&&cloudReady&&cloudUser){clearTimeout(cloudTimer);cloudWritePending=true;cloudTimer=setTimeout(()=>writeCloud(serialized),450)}
   return true;
  }catch(e){
   const status=document.getElementById('saveStatus');
@@ -56,7 +64,7 @@ function saveAll(sync=true){
 function applyAppData(data){
  if(!data)return;
  settings=data.settings||settings;templates=data.templates||templates;overrides=data.overrides||{};checks=data.checks||{};dayExtras=data.dayExtras||{};
- localStorage.setItem('rotinaAppData',JSON.stringify(appData()));
+ saveLocalAppData(JSON.stringify(appData()));
  fillSettingsForm();renderFeriasBadge();renderHoje();renderEditors();renderCalendar();
 }
 function setSaveMessage(message,error=false){const el=document.getElementById('saveStatus');if(el){el.textContent=message;el.classList.toggle('error',error)}}
@@ -66,8 +74,76 @@ function setAuthMode(mode){const signup=mode==='signup';document.getElementById(
 async function submitAuth(event){event.preventDefault();if(!window.routineAuth)return;const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;try{setAuthMessage('Conectando…');if(document.getElementById('authSwitch').dataset.mode==='login')await window.routineAuth.signInWithEmailAndPassword(email,password);else await window.routineAuth.createUserWithEmailAndPassword(email,password)}catch(e){const msgs={ 'auth/invalid-email':'Confira o endereço de e-mail.','auth/user-not-found':'Conta não encontrada. Crie uma conta ou confira o e-mail.','auth/wrong-password':'Senha incorreta.','auth/invalid-credential':'E-mail ou senha inválidos.','auth/email-already-in-use':'Este e-mail já possui conta. Entre nela.','auth/weak-password':'Use uma senha com pelo menos 6 caracteres.','auth/operation-not-allowed':'Ative E-mail/senha na configuração de autenticação do Firebase.'};setAuthMessage(msgs[e.code]||'Não foi possível entrar. Confira sua conexão e a configuração Firebase.',true)}}
 async function resetPassword(){const email=document.getElementById('authEmail').value.trim();if(!email){setAuthMessage('Informe seu e-mail para receber o link de redefinição.',true);return}try{await window.routineAuth.sendPasswordResetEmail(email);setAuthMessage('Enviamos um link para redefinir sua senha.')}catch(e){setAuthMessage('Não foi possível enviar o link. Confira o e-mail e a configuração Firebase.',true)}}
 async function signOutUser(){if(window.routineAuth)await window.routineAuth.signOut()}
-async function writeCloud(serialized){if(!cloudReady||!cloudUser)return;try{setSaveMessage('Sincronizando…');await window.routineDoc(cloudUser.uid).set(JSON.parse(serialized));lastCloudJSON=serialized;setSaveMessage('Sincronizado com sua conta')}catch(e){setSaveMessage('Sem conexão · dados salvos neste dispositivo',true)}}
-function loadCloudUser(user){cloudUser=user;cloudReady=false;if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null}if(!user){document.getElementById('authScreen').hidden=false;document.getElementById('appShell').hidden=true;cloudUser=null;return}document.getElementById('authScreen').hidden=true;document.getElementById('appShell').hidden=false;document.getElementById('accountEmail').textContent=user.email||'Conta';const ref=window.routineDoc(user.uid);cloudUnsubscribe=ref.onSnapshot(snapshot=>{if(snapshot.exists){const data=snapshot.data(),serialized=JSON.stringify(data);if(serialized!==lastCloudJSON){applyAppData(data);lastCloudJSON=serialized}cloudReady=true;setSaveMessage('Sincronizado com sua conta')}else if(!cloudReady){cloudReady=true;writeCloud(JSON.stringify(appData()))}},()=>{cloudReady=true;setSaveMessage('Sem conexão · dados salvos neste dispositivo',true)})}
+async function writeCloud(serialized){if(!cloudReady||!cloudUser)return;try{setSaveMessage('Sincronizando…');await window.routineDoc(cloudUser.uid).set(JSON.parse(serialized));lastCloudJSON=serialized;cloudWritePending=false;setSaveMessage('Sincronizado com sua conta')}catch(e){cloudWritePending=false;setSaveMessage('Sem conexão · dados salvos neste dispositivo',true)}}
+function showDataChoice(deviceData,cloudData){
+ pendingDataChoice={deviceData,cloudData};
+ document.getElementById('authScreen').hidden=true;document.getElementById('appShell').hidden=true;document.getElementById('dataChoiceScreen').hidden=false;
+ const hasCloud=!!cloudData,account=cloudUser?.email||'esta conta';
+ document.getElementById('dataChoiceTitle').textContent=hasCloud?'Qual cópia deseja manter?':'Há dados neste aparelho';
+ document.getElementById('dataChoiceText').textContent=hasCloud
+  ?`Encontramos uma cópia local diferente dos dados da nuvem de ${account}. Escolher a cópia deste aparelho substituirá os dados que estão na nuvem.`
+  :`Encontramos dados antigos neste navegador. Eles só serão enviados para a conta ${account} se você escolher importar.`;
+ document.getElementById('useDeviceData').hidden=!deviceData;
+ document.getElementById('useCloudData').hidden=!hasCloud;
+ document.getElementById('startEmptyData').hidden=hasCloud;
+}
+function freshAppData(){settings={turno:'',work:1,rest:1,anchor:'',vacStart:'',vacEnd:''};templates=defaultTemplates();overrides={};checks={};dayExtras={};return appData()}
+async function resolveDataChoice(choice){
+ if(!pendingDataChoice||!cloudUser)return;
+ let data;
+ if(choice==='device')data=pendingDataChoice.deviceData;
+ else if(choice==='cloud')data=pendingDataChoice.cloudData;
+ else data=freshAppData();
+ pendingDataChoice=null;applyAppData(data);lastCloudJSON=JSON.stringify(appData());cloudReady=true;showMainApp();
+ if(choice==='cloud')setSaveMessage('Sincronizado com sua conta');else await writeCloud(lastCloudJSON);
+}
+function loadCloudUser(user){
+ const nextUid=user?.uid||null,previousUid=cloudUser?.uid||null;
+ if(nextUid!==previousUid){lastCloudJSON='';cloudWritePending=false}
+ cloudUser=user;cloudReady=false;pendingDataChoice=null;
+ if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null}
+ if(!user){document.getElementById('authScreen').hidden=false;document.getElementById('appShell').hidden=true;document.getElementById('dataChoiceScreen').hidden=true;cloudUser=null;return}
+ document.getElementById('accountEmail').textContent=user.email||'Conta';
+ const ref=window.routineDoc(user.uid);
+ cloudUnsubscribe=ref.onSnapshot(snapshot=>{
+  if(pendingDataChoice)return;
+  const localData=readDeviceData(user.uid);
+  if(snapshot.exists){
+   const data=snapshot.data(),serialized=JSON.stringify(data);
+   if(cloudReady&&cloudWritePending&&serialized===lastCloudJSON)return;
+   const localSerialized=localData?JSON.stringify(localData):'';
+   const hasUnsyncedLocal=!!localSerialized&&localSerialized!==lastCloudJSON&&localSerialized!==serialized;
+   if(localData&&localSerialized!==serialized&&(!cloudReady||hasUnsyncedLocal)){showDataChoice(localData,data);return}
+   if(serialized!==lastCloudJSON){applyAppData(data);lastCloudJSON=serialized}
+   cloudReady=true;showMainApp();setSaveMessage('Sincronizado com sua conta');
+  }else if(!cloudReady){
+   if(localData){showDataChoice(localData,null);return}
+   const initial=JSON.stringify(appData());saveLocalAppData(initial);lastCloudJSON=initial;cloudReady=true;showMainApp();writeCloud(initial);
+  }
+ },()=>{
+  const localData=readLocalAppData(accountStorageKey(user.uid));
+  if(localData){applyAppData(localData);showMainApp()}else{document.getElementById('authScreen').hidden=true;document.getElementById('appShell').hidden=true;document.getElementById('dataChoiceScreen').hidden=false;document.getElementById('dataChoiceTitle').textContent='Não foi possível conectar';document.getElementById('dataChoiceText').textContent='Confira sua conexão e atualize a página. Os dados locais desta conta foram preservados.';document.getElementById('useDeviceData').hidden=true;document.getElementById('useCloudData').hidden=true;document.getElementById('startEmptyData').hidden=true}
+  cloudReady=true;setSaveMessage('Sem conexão · dados salvos neste dispositivo',true);
+ });
+}
+function openDeleteAccountDialog(){
+ document.getElementById('deleteAccountPassword').value='';document.getElementById('deleteAccountMessage').textContent='';document.getElementById('deleteAccountDialog').showModal();
+}
+async function deleteAccountAndData(event){
+ event.preventDefault();const user=window.routineAuth?.currentUser;if(!user)return;
+ try{
+  const password=document.getElementById('deleteAccountPassword').value;
+  const credential=firebase.auth.EmailAuthProvider.credential(user.email,password);
+  await user.reauthenticateWithCredential(credential);
+  await window.routineDoc(user.uid).delete();
+  await user.delete();
+  localStorage.removeItem(accountStorageKey(user.uid));
+  document.getElementById('deleteAccountDialog').close();
+ }catch(e){
+  const messages={'auth/wrong-password':'Senha incorreta. Confira e tente novamente.','auth/invalid-credential':'Senha incorreta. Confira e tente novamente.','auth/too-many-requests':'Muitas tentativas. Aguarde um pouco e tente novamente.','auth/requires-recent-login':'Não foi possível confirmar a sessão. Saia e entre novamente antes de excluir a conta.'};
+  document.getElementById('deleteAccountMessage').textContent=messages[e.code]||'Não foi possível excluir a conta. Confira sua conexão e tente novamente.';
+ }
+}
 function initCloud(){if(!firebaseConfigured()||!window.firebase){document.getElementById('authScreen').hidden=true;document.getElementById('appShell').hidden=false;setSaveMessage('Salvo neste dispositivo');return}try{firebase.initializeApp(window.ROUTINA_FIREBASE_CONFIG);window.routineAuth=firebase.auth();const db=firebase.firestore();window.routineDoc=uid=>db.collection('users').doc(uid).collection('appData').doc('main');window.routineAuth.onAuthStateChanged(loadCloudUser)}catch(e){document.getElementById('authScreen').hidden=false;document.getElementById('appShell').hidden=true;setAuthMessage('Falha ao iniciar Firebase. Confira firebase-config.js.',true)}}
 function exportData(){
  const backup={app:'Minha Rotina',version:1,exportedAt:new Date().toISOString(),settings,templates,overrides,checks,dayExtras};
