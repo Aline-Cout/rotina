@@ -66,3 +66,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,label:focus-visibl
 @media(max-width:600px){.auth-note{font-size:12px}.reset-link{font-size:11px}.auth-card #authSubmit{min-height:52px}}
 
 
+.task-card-tools{display:flex;align-items:center;gap:5px}.task-status-select{width:106px;min-width:0;min-height:29px;padding:4px 19px 4px 8px;border:1px solid #dfe5e8;border-radius:7px;background-color:#f5f6f7;color:#5e6972;font-size:11px;font-weight:650;line-height:1.2;cursor:pointer}.task-status-select.stage-doing{background-color:#eef3fb;border-color:#dce6f5;color:#456caa}.task-status-select.stage-done{background-color:#edf5ef;border-color:#dce9df;color:#467653}.task-status-select:focus-visible{outline:3px solid rgba(57,115,198,.3);outline-offset:2px}
+@media(max-width:700px){.task-status-select{min-height:32px;font-size:11px}}
+
