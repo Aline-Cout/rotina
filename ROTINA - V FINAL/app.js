@@ -76,18 +76,20 @@ let calYear,calMonth,selectedDate=null;
 function appData(){return {version:1,settings,templates,overrides,checks,dayExtras}}
 const LEGACY_STORAGE_KEY='rotinaAppData';
 const accountStorageKey=uid=>`rotinaAppData:user:${uid}`;
-let cloudUser=null,cloudReady=false,cloudUnsubscribe=null,cloudTimer=null,lastCloudJSON='',pendingDataChoice=null,cloudWritePending=false,authMode='login';
+let cloudUser=null,cloudReady=false,cloudUnsubscribe=null,cloudTimer=null,lastCloudJSON='',pendingDataChoice=null,cloudWritePending=false,authMode='login',localFallbackMode=false;
 function readLocalAppData(key){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null}catch(e){return null}}
 function readDeviceData(uid){return readLocalAppData(accountStorageKey(uid))||readLocalAppData(LEGACY_STORAGE_KEY)||legacyDataSnapshot}
-function saveLocalAppData(serialized){if(!cloudUser&&firebaseConfigured())return;localStorage.setItem(cloudUser?accountStorageKey(cloudUser.uid):LEGACY_STORAGE_KEY,serialized)}
+function saveLocalAppData(serialized){if(!cloudUser&&firebaseConfigured()&&!localFallbackMode)return false;localStorage.setItem(cloudUser?accountStorageKey(cloudUser.uid):LEGACY_STORAGE_KEY,serialized);return true}
 function showMainApp(){document.getElementById('dataChoiceScreen').hidden=true;document.getElementById('emailVerificationScreen').hidden=true;document.getElementById('authScreen').hidden=true;document.getElementById('appShell').hidden=false}
 function saveAll(sync=true){
  try{
   const serialized=JSON.stringify(appData());
-  saveLocalAppData(serialized);
+  const savedLocally=saveLocalAppData(serialized);
+  const canSync=sync&&cloudReady&&cloudUser;
+  if(!savedLocally&&!canSync){setSaveMessage('Entre na conta para salvar suas alterações.',true);return false}
   const status=document.getElementById('saveStatus');
-  if(status){status.textContent=cloudUser?'Salvo neste dispositivo · sincronizando…':'Salvo neste dispositivo';status.classList.remove('error')}
-  if(sync&&cloudReady&&cloudUser){clearTimeout(cloudTimer);cloudWritePending=true;cloudTimer=setTimeout(()=>writeCloud(serialized),450)}
+  if(status){status.textContent=cloudUser?'Salvo neste dispositivo · sincronizando…':firebaseConfigured()?'Salvo neste dispositivo · sincronização indisponível':'Salvo neste dispositivo';status.classList.remove('error')}
+  if(canSync){clearTimeout(cloudTimer);cloudWritePending=true;cloudTimer=setTimeout(()=>writeCloud(serialized),450)}
   return true;
  }catch(e){
   const status=document.getElementById('saveStatus');
@@ -182,7 +184,7 @@ async function deleteAccountAndData(event){
   document.getElementById('deleteAccountMessage').textContent=messages[e.code]||'Não foi possível excluir a conta. Confira sua conexão e tente novamente.';
  }
 }
-function initCloud(){if(!firebaseConfigured()||!window.firebase){document.getElementById('authScreen').hidden=true;document.getElementById('appShell').hidden=false;setSaveMessage('Salvo neste dispositivo');return}try{firebase.initializeApp(window.ROUTINA_FIREBASE_CONFIG);window.routineAuth=firebase.auth();const db=firebase.firestore();window.routineDoc=uid=>db.collection('users').doc(uid).collection('appData').doc('main');window.routineAuth.onAuthStateChanged(loadCloudUser)}catch(e){document.getElementById('authScreen').hidden=false;document.getElementById('appShell').hidden=true;setAuthMessage('Falha ao iniciar Firebase. Confira firebase-config.js.',true)}}
+function initCloud(){if(!firebaseConfigured()){document.getElementById('authScreen').hidden=true;document.getElementById('appShell').hidden=false;setSaveMessage('Modo local · dados neste dispositivo');saveAll(false);return}if(!window.firebase){localFallbackMode=true;document.getElementById('authScreen').hidden=true;document.getElementById('appShell').hidden=false;setSaveMessage('Firebase indisponível · salvando neste dispositivo',true);saveAll(false);return}try{firebase.initializeApp(window.ROUTINA_FIREBASE_CONFIG);window.routineAuth=firebase.auth();const db=firebase.firestore();window.routineDoc=uid=>db.collection('users').doc(uid).collection('appData').doc('main');window.routineAuth.onAuthStateChanged(loadCloudUser)}catch(e){document.getElementById('authScreen').hidden=false;document.getElementById('appShell').hidden=true;setAuthMessage('Falha ao iniciar Firebase. Confira firebase-config.js.',true)}}
 function exportData(){
  const backup={app:'Minha Rotina',version:1,exportedAt:new Date().toISOString(),settings,templates,overrides,checks,dayExtras};
  const url=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}));
@@ -240,6 +242,7 @@ function setTaskStatus(date,taskId,status){
  saveAll();renderHoje();
 }
 function dragTask(event,date,taskId){
+ if(event.target.closest('.task-status-select')){event.preventDefault();return}
  event.dataTransfer.effectAllowed='move';
  event.dataTransfer.setData('text/plain',JSON.stringify({date,taskId}));
  event.currentTarget.classList.add('dragging');
@@ -339,7 +342,19 @@ function renderTaskCard(task,date,status){
  const state=getCheckState(date,task.id);
  const shortId=String(task.id).slice(-4).toUpperCase();
  const category=dayType(date)==='plantao'?'Plantão':dayType(date)==='folga'?'Folga':'Rotina base';
- return `<article class="task-card ${status==='done'?'completed':''}" draggable="true" ondragstart="dragTask(event,'${date}','${task.id}')" ondragend="this.classList.remove('dragging')"><div class="task-card-head"><span class="task-id">${task.extra?'PESSOAL':'ROT'}-${shortId}</span><span class="drag-handle" aria-hidden="true">⠿</span></div><h4>${escapeHTML(task.title)}</h4>${task.detail?`<p class="task-description">${escapeHTML(task.detail)}</p>`:''}<div class="task-card-foot"><label class="task-time"><span>HORÁRIO</span><input type="time" value="${state.time||task.time}" onchange="setCheckTime('${date}','${task.id}',this.value)" aria-label="Horário de ${escapeAttr(task.title)}"></label>${task.extra?`<button class="remove-task" aria-label="Remover ${escapeAttr(task.title)}" onclick="removeExtraTask('${date}','${task.id}')">×</button>`:`<span class="task-category">${category}</span>`}</div></article>`;
+ return `<article class="task-card ${status==='done'?'completed':''}" draggable="true" ondragstart="dragTask(event,'${date}','${task.id}')" ondragend="this.classList.remove('dragging')"><div class="task-card-head"><span class="task-id">${task.extra?'PESSOAL':'ROT'}-${shortId}</span><div class="task-card-tools"><select class="task-status-select stage-${status}" data-date="${escapeAttr(date)}" data-task-id="${escapeAttr(task.id)}" aria-label="Etapa da tarefa ${escapeAttr(task.title)}" title="Alterar etapa"><option value="todo" ${status==='todo'?'selected':''}>A fazer</option><option value="doing" ${status==='doing'?'selected':''}>Em andamento</option><option value="done" ${status==='done'?'selected':''}>Concluída</option></select><span class="drag-handle" aria-hidden="true">⠿</span></div></div><h4>${escapeHTML(task.title)}</h4>${task.detail?`<p class="task-description">${escapeHTML(task.detail)}</p>`:''}<div class="task-card-foot"><label class="task-time"><span>HORÁRIO</span><input type="time" value="${state.time||task.time}" onchange="setCheckTime('${date}','${task.id}',this.value)" aria-label="Horário de ${escapeAttr(task.title)}"></label>${task.extra?`<button class="remove-task" aria-label="Remover ${escapeAttr(task.title)}" onclick="removeExtraTask('${date}','${task.id}')">×</button>`:`<span class="task-category">${category}</span>`}</div></article>`;
+}
+function bindTaskStatusControls(){
+ const board=document.getElementById('routine');
+ if(!board||board.dataset.statusControlsBound)return;
+ board.dataset.statusControlsBound='true';
+ board.addEventListener('change',event=>{
+  const control=event.target.closest('.task-status-select');
+  if(!control||!board.contains(control))return;
+  const {date,taskId}=control.dataset;
+  setTaskStatus(date,taskId,control.value);
+  [...board.querySelectorAll('.task-status-select')].find(item=>item.dataset.date===date&&item.dataset.taskId===taskId)?.focus();
+ });
 }
 function updateProgress(date,tasks){
  const states=tasks.map(t=>getCheckState(date,t.id).status);
@@ -509,6 +524,7 @@ function renderFeriasBadge(){
 }
 
 // init
+bindTaskStatusControls();
 fillSettingsForm();
 saveAll();
 renderFeriasBadge();
